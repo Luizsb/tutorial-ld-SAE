@@ -118,7 +118,6 @@ Marcadas como "A completar" na própria página:
 - [ ] Passo 5: como abrir o DIA LD, com link, e o que a pessoa deve ver quando estiver pronto.
 - [ ] Passo 10: quem faz o cotejo e como o capítulo é encaminhado.
 - [ ] Passo 11: o que fazer com ajustes do cotejo que não fazem sentido.
-- [ ] Passo 2: o texto ainda cita o fluxo de bookmarks do SAS. Confirmar se deve sair ou ser reescrito para o SAE.
 - [ ] Links do DIA LD, da pasta do Drive e da planilha de controle do volume na página "Acessos e ferramentas".
 - [ ] Seção de problemas comuns por passo ("Se der ruim").
 - [ ] Página de pré-requisitos (o que a pessoa precisa saber antes de começar).
