@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial Livro Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: menu lateral fixo com fases e passos, conteúdo de um passo por vez, navegação anterior/próximo. */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --muted: #5a6877;
+  --line: #dbe1e7;
+  --accent: #0a63d1;
+  --accent-soft: #e3eefc;
+  --warn: #8a5a00;
+  --warn-soft: #fff3d6;
+  --ok: #1d7a4a;
+  --on-ok: #ffffff;
+  --p1: #0a63d1;
+  --p2: #7f2a8e;
+  --p3: #9a5a00;
+  --p4: #1d7a4a;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1519;
+    --surface: #172028;
+    --ink: #e8eef3;
+    --muted: #9aabb9;
+    --line: #2a3742;
+    --accent: #5aa9ff;
+    --accent-soft: #12294a;
+    --warn: #f0c36a;
+    --warn-soft: #34290f;
+    --ok: #5fd08f;
+    --on-ok: #04152b;
+    --p1: #5aa9ff;
+    --p2: #d08ae0;
+    --p3: #fbb633;
+    --p4: #5fd08f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1519;
+  --surface: #172028;
+  --ink: #e8eef3;
+  --muted: #9aabb9;
+  --line: #2a3742;
+  --accent: #5aa9ff;
+  --accent-soft: #12294a;
+  --warn: #f0c36a;
+  --warn-soft: #34290f;
+  --ok: #5fd08f;
+  --on-ok: #04152b;
+  --p1: #5aa9ff;
+  --p2: #d08ae0;
+  --p3: #fbb633;
+  --p4: #5fd08f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+.app { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+.side { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--line); padding: 20px 14px 28px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.15; margin: 0 6px 4px; text-wrap: balance; }
+.brand-sub { margin: 0 6px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+.progress { margin: 0 6px 18px; }
+.progress-top { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 99px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; background: var(--ok); transition: width .3s; }
+.nav-group { margin: 14px 0 4px; padding: 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.nav-group i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 14.5px; line-height: 1.3; }
+.nav a:hover { background: var(--bg); }
+.nav a[aria-current="page"] { background: var(--accent-soft); font-weight: 600; }
+.nav .num { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); }
+.nav a.done .num { background: var(--ok); border-color: var(--ok); color: var(--on-ok); }
+.nav .plain { flex: none; width: 26px; text-align: center; color: var(--muted); }
+.reset { margin: 18px 6px 0; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
+
+.topbar { display: none; }
+.main { padding: 36px clamp(16px, 4vw, 56px) 72px; }
+.page { max-width: 780px; margin: 0 auto; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin: 0 0 8px; }
+.eyebrow i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 30px 0 10px; text-wrap: balance; }
+.lead { font-size: 18px; color: var(--muted); margin: 0 0 22px; max-width: 65ch; }
+p { max-width: 68ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.grid { display: grid; gap: 14px; }
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.path { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 6px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.path span { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 9px; font-family: var(--font-mono); font-size: 13px; }
+.path b { color: var(--muted); font-weight: 400; }
+.path-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 6px; }
+
+ol.do { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 10px; }
+ol.do li { counter-increment: s; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 52px; max-width: 70ch; }
+ol.do li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+.ui { font-family: var(--font-mono); font-size: 13.5px; background: var(--accent-soft); border-radius: 5px; padding: 1px 7px; white-space: nowrap; }
+
+.checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; max-width: 70ch; }
+.checks input { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--ok); flex: none; }
+.checks input:checked + span { color: var(--muted); text-decoration: line-through; }
+
+.attn { background: var(--warn-soft); border-left: 4px solid var(--warn); border-radius: 8px; padding: 12px 16px; max-width: 70ch; }
+.attn ul { margin: 0; padding-left: 18px; }
+.attn li { margin: 2px 0; }
+.attn strong { color: var(--warn); }
+.todo { border: 1.5px dashed var(--line); border-radius: 10px; padding: 10px 14px; color: var(--muted); font-size: 14px; max-width: 70ch; }
+
+.finish { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 30px; padding: 16px 18px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 9px 16px; border-radius: 10px; cursor: pointer; font-weight: 500; text-decoration: none; color: var(--ink); display: inline-block; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #04152b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #04152b; } }
+.btn.done { background: var(--ok); border-color: var(--ok); color: #fff; }
+:root[data-theme="dark"] .btn.done { color: #04152b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.done { color: #04152b; } }
+.pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+.tablewrap { overflow-x: auto; }
+dl.gloss { display: grid; gap: 10px; margin: 0; }
+dl.gloss > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; max-width: 70ch; }
+dl.gloss dt { font-weight: 600; font-family: var(--font-mono); font-size: 14px; }
+dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.phase-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 8px; }
+.phase-map a { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 12px 14px; display: block; }
+.phase-map a:hover { border-color: var(--c); }
+.phase-map small { color: var(--muted); display: block; }
+.phase-map strong { font-family: var(--font-display); font-size: 17px; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: fixed; inset: 0 auto 0 0; width: min(320px, 88vw); z-index: 20; transform: translateX(-100%); visibility: hidden; transition: transform .2s, visibility 0s .2s; box-shadow: 0 0 40px rgba(0,0,0,.25); }
+  .side.open { transform: none; visibility: visible; transition: transform .2s; }
+  .scrim.on { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 15; }
+  .topbar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  .topbar strong { font-family: var(--font-display); }
+  .grid.two, .phase-map { grid-template-columns: 1fr; }
+  .main { padding-top: 22px; }
+}
+
+.brandrow { display: flex; align-items: center; gap: 12px; margin: 0 4px 16px; }
+.logo-chip { display: flex; flex: none; background: #fff; border-radius: 12px; padding: 8px 10px; border: 1px solid var(--line); }
+.logo-chip img { height: 84px; width: auto; display: block; }
+.brandtitle { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.2; display: block; }
+.brandsub { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 4px; }
+.skip { position: absolute; left: -999px; top: 8px; z-index: 50; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px; }
+.skip:focus { left: 8px; }
+.main:focus { outline: none; }
+.save-note { margin: -10px 6px 14px; font-size: 12.5px; color: var(--muted); }
+.scrim { display: none; }
+.hero { display: flex; align-items: center; gap: 22px; margin-bottom: 8px; }
+.hero img { width: 132px; height: auto; flex: none; }
+.hero > div { min-width: 0; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.guide { display: flex; gap: 12px; align-items: center; margin: 0 0 18px; }
+.guide img { width: 44px; height: auto; }
+.cred { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-width: 70ch; display: grid; gap: 10px; }
+.cred a { word-break: break-all; font-family: var(--font-mono); font-size: 14px; }
+.cred-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.cred-row label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.cred-row input { width: 100%; min-width: 0; font-family: var(--font-mono); font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.cred-row .btn { padding: 7px 12px; font-size: 14px; }
+.cred small { color: var(--muted); }
+.eye svg { width: 20px; height: 20px; display: block; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 900px) { .hero { flex-direction: column; align-items: flex-start; } .cred-row { grid-template-columns: 1fr auto auto; } .cred-row label { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" id="skipLink" href="#conteudo">Ir para o conteúdo</a>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="btn" id="menuBtn" aria-expanded="false" aria-controls="side">Menu</button>
+  <strong>Livros Digitais novos do SAE</strong>
+</div>
+<div class="app">
+  <aside class="side" id="side" aria-label="Menu do tutorial">
+    <a class="brandrow" href="#visao-geral" style="text-decoration:none;color:inherit" aria-label="SAE Digital, início do tutorial">
+      <span class="logo-chip"><img src="sae-logo.png" alt="SAE Digital"></span>
+      <span><span class="brandtitle">Livros Digitais novos</span><span class="brandsub">Tutorial de criação, do PDF ao pagamento</span></span>
+    </a>
+    <div class="progress" aria-live="polite">
+      <div class="progress-top"><span>Seu progresso</span><span id="progText">0 de 13 passos</span></div>
+      <div class="bar"><span id="progBar"></span></div>
+    </div>
+    <p class="save-note" id="saveNote"></p>
+    <nav class="nav" id="nav" aria-label="Passos do tutorial"></nav>
+    <button class="reset" id="resetBtn" type="button">Limpar meu progresso</button>
+  </aside>
+  <main class="main" id="main" tabindex="-1"></main>
+</div>
+
+<script>
+(function () {
+  var PHASES = [
+    { id: 1, name: "Preparação", range: "Passos 1 a 3", color: "var(--p1)", blurb: "Buscar o PDF, separar por disciplina e deixar tudo no lugar certo do Drive." },
+    { id: 2, name: "Produção", range: "Passos 4 a 8", color: "var(--p2)", blurb: "Escolher o capítulo e gerar o HTML com o DIA LD." },
+    { id: 3, name: "Validação", range: "Passos 9 a 11", color: "var(--p3)", blurb: "Conferir PDF contra HTML, passar pelo cotejo e aplicar ajustes." },
+    { id: 4, name: "Publicação e pagamento", range: "Passos 12 e 13", color: "var(--p4)", blurb: "Subir no Bigodão, registrar o link e liberar o pagamento." }
+  ];
+
+  var STEPS = [
+    {
+      n: 1, phase: 1, title: "Baixar o PDF do professor no Assets",
+      tool: "Assets", access: "Acesso ao Assets", links: [["Abrir o Assets", "https://arco-dam.eos.woodwing.cloud/app/#/ssoOIDCLogin"]],
+      lead: "Tudo começa pelo PDF do livro do professor, na versão final da gráfica.",
+      path: ["Segmento", "Ano", "Ano e Volume", "PDF_FINAL", "PDF_GRAFICA", "Livro do professor"],
+      doPath: true,
+      doList: [
+        "Abra o <span class='ui'>Assets</span> e escolha o <b>segmento</b> (EI, AI...).",
+        "Escolha o <b>ano</b> (2025, 2026...).",
+        "Escolha o <b>ano e volume</b>. Os nomes seguem o padrão <span class='ui'>SAE_AI_01_V1</span>, <span class='ui'>SAE_AI_01_V2</span>, <span class='ui'>SAE_AI_02_V1</span>...",
+        "Entre em <span class='ui'>PDF_FINAL</span>, depois em <span class='ui'>PDF_GRAFICA</span>.",
+        "Selecione o <b>livro do professor</b> e baixe."
+      ],
+      check: ["Baixei o livro do professor, não o do aluno", "O volume baixado é o do ciclo que vou produzir"],
+      attn: ["Confira o volume no nome do arquivo antes de seguir. V1 e V2 ficam lado a lado na mesma lista."]
+    },
+    {
+      n: 2, phase: 1, title: "Cortar o PDF por disciplina",
+      tool: "Divisor de PDF", access: "Acesso ao divisor de PDF", links: [["Abrir o divisor de PDF", "https://divisor-pdf.netlify.app/"]],
+      lead: "O PDF do professor vem inteiro. Aqui ele vira um arquivo por disciplina.",
+      doList: [
+        "Abra o divisor de PDF e suba o <b>PDF do professor</b>.",
+        "Clique em <span class='ui'>Assistente de Divisão</span>.",
+        "<b>Só em SAS:</b> clique em <span class='ui'>Carregar bookmarks</span> e veja se os capítulos já aparecem separados por disciplina.",
+        "Aplique a divisão.",
+        "Confira se tudo foi aplicado corretamente.",
+        "Baixe o <b>zip</b>."
+      ],
+      check: ["Os capítulos estão separados por disciplina", "Nenhuma disciplina ficou de fora ou duplicada", "Baixei o zip"],
+      attn: ["O botão <b>Carregar bookmarks</b> faz parte do fluxo de SAS. Para SAE, o corte segue pelo Assistente de Divisão sem essa etapa.", "Não pule a conferência: um corte errado aqui contamina todos os capítulos seguintes."],
+      todo: "Confirmar com o time como é a divisão em SAE, já que o passo dos bookmarks é de SAS."
+    },
+    {
+      n: 3, phase: 1, title: "Subir os PDFs no Drive compartilhado",
+      tool: "Google Drive (Drive compartilhado Livro Digital)", access: "Acesso ao Drive compartilhado Livro Digital",
+      lead: "Cada PDF cortado tem um endereço certo no Drive.",
+      path: ["Livro Digital", "Volume (ex.: V2_27)", "Livros_Novos", "2-PDF's", "Segmento", "Disciplina"],
+      doPath: true,
+      doList: [
+        "No Drive compartilhado <span class='ui'>Livro Digital</span>, abra a pasta do <b>volume correspondente</b> (por exemplo, <span class='ui'>V2_27</span>).",
+        "Entre em <span class='ui'>Livros_Novos</span> e depois em <span class='ui'>2-PDF's</span>.",
+        "Ache o <b>segmento</b> e a <b>disciplina</b> correspondentes.",
+        "Faça o upload de cada PDF na sua disciplina."
+      ],
+      check: ["Cada PDF está na pasta do segmento e da disciplina certos", "O volume da pasta é o mesmo do PDF baixado"],
+      attn: ["Subir na disciplina errada atrapalha quem pegar o capítulo depois. Confira o nome do arquivo contra o nome da pasta."]
+    },
+    {
+      n: 4, phase: 2, title: "Escolher e reservar um capítulo na planilha",
+      tool: "Planilha de controle do volume", access: "Edição na planilha de controle",
+      lead: "Colocar o seu nome no capítulo evita que duas pessoas façam o mesmo trabalho.",
+      doList: [
+        "Abra a planilha do volume (ela já vem pronta, com as datas de recebimento de cada segmento).",
+        "Escolha um <b>capítulo e disciplina</b> para produzir. Exemplo deste tutorial: <b>Geografia, 5º ano</b>.",
+        "Coloque o <b>seu nome</b> na linha desse capítulo."
+      ],
+      check: ["Meu nome está na linha do capítulo", "Conferi que ninguém tinha pegado esse capítulo antes"],
+      attn: ["Olhe a data de recebimento do segmento antes de escolher. Ela define o prazo do seu capítulo."]
+    },
+    {
+      n: 5, phase: 2, title: "Rodar o DIA LD",
+      tool: "DIA LD", access: "Acesso ao DIA LD",
+      lead: "O DIA LD é a ferramenta que transforma o PDF em HTML. Primeiro é preciso colocá-la para rodar.",
+      doList: [
+        "Rode o <span class='ui'>DIA LD</span>.",
+        "Deixe a ferramenta aberta. Você vai usá-la nos próximos dois passos."
+      ],
+      check: ["O DIA LD abriu e está pronto para receber arquivos"],
+      attn: [],
+      todo: "Descrever aqui como o DIA LD é iniciado (link ou comando) e o que a pessoa deve ver na tela quando estiver pronto."
+    },
+    {
+      n: 6, phase: 2, title: "Separar um HTML de referência",
+      tool: "Google Drive", access: "Leitura nas pastas do volume anterior",
+      lead: "O DIA LD precisa de um exemplo de como o HTML dessa disciplina deve ficar.",
+      doList: [
+        "Vá ao volume anterior (por exemplo, <span class='ui'>V1</span>).",
+        "Pegue um <b>arquivo HTML da mesma disciplina e ano</b>. No exemplo: Geografia, 5º ano.",
+        "Deixe o arquivo à mão para o próximo passo."
+      ],
+      check: ["O HTML de referência é da mesma disciplina e do mesmo ano do capítulo"],
+      attn: ["Referência de outra disciplina gera um HTML com estrutura diferente da esperada."]
+    },
+    {
+      n: 7, phase: 2, title: "Gerar o HTML no DIA LD",
+      tool: "DIA LD", access: "Acesso ao DIA LD",
+      lead: "O passo mais longo. A ferramenta faz boa parte, mas você decide quais imagens ficam.",
+      doList: [
+        "Suba o <b>PDF escolhido</b> (o da sua disciplina).",
+        "Espere a ferramenta gerar o <b>JSON</b> e extrair as <b>imagens</b>.",
+        "Abra a <b>pasta de imagens</b> e exclua o que não faz sentido.",
+        "Rode a geração do <b>ALT com IA</b> (texto alternativo das imagens).",
+        "Siga para a próxima etapa e suba o <b>HTML de referência</b>.",
+        "Aguarde a ferramenta terminar.",
+        "Baixe o <b>zip</b> com o HTML e as imagens."
+      ],
+      check: ["Excluí as imagens sem sentido antes de gerar o ALT", "O ALT foi gerado", "Baixei o zip com HTML e imagens"],
+      attn: ["Limpe as imagens <b>antes</b> de gerar o ALT. Assim a IA não gasta texto com imagem que vai sair.", "Imagens soltas, como ícones criados à mão, não vêm pelo JSON. O passo 8 cuida disso."]
+    },
+    {
+      n: 8, phase: 2, title: "Guardar HTML e imagens na pasta da disciplina",
+      tool: "Google Drive", access: "Edição nas pastas do volume",
+      lead: "A pasta da disciplina guarda também o que veio de volumes antigos. Não limpe nada.",
+      path: ["Volume", "Ano", "Segmento", "Disciplina"],
+      doPath: true,
+      doList: [
+        "Abra a pasta <span class='ui'>Volume / Ano / Segmento / Disciplina</span>.",
+        "<b>Mantenha as pastas antigas</b> (como a do V1). Parte das imagens são ícones criados à mão e não vêm pelo JSON.",
+        "Adicione nessa pasta as <b>imagens que vieram do DIA LD</b>.",
+        "Adicione também o <b>HTML</b> gerado."
+      ],
+      check: ["As pastas antigas continuam no lugar", "Imagens do DIA LD e HTML estão na pasta da disciplina"],
+      attn: ["Apagar a pasta antiga some com os ícones que só existem lá."]
+    },
+    {
+      n: 9, phase: 3, title: "Conferir PDF e HTML lado a lado",
+      tool: "PDF aberto ao lado do HTML no navegador", access: "Nenhum acesso extra", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
+      lead: "A conferência é a principal garantia de qualidade da sua entrega.",
+      doList: [
+        "Abra o <b>PDF</b> e o <b>HTML gerado</b> lado a lado.",
+        "Vá batendo se o conteúdo do PDF consta no HTML.",
+        "Valide também as <b>atividades interativas</b>.",
+        "Ficou em dúvida sobre qual código aplicar? Consulte a <a href='https://luizsb.github.io/Biblioteca_LD/' target='_blank' rel='noopener'>Biblioteca de códigos do LD</a>: ela reúne os códigos mais usados no livro, padrões e questões interativas."
+      ],
+      check: ["Todo o conteúdo do PDF aparece no HTML", "Imagens estão nos lugares certos", "As atividades interativas funcionam"],
+      attn: ["Atividades interativas pedem teste de verdade: clique, responda e veja o retorno."]
+    },
+    {
+      n: 10, phase: 3, title: "Passar pelo cotejo",
+      tool: "Etapa de cotejo", access: "Aviso ao time responsável",
+      lead: "Com a produção fechada, o capítulo segue para a conferência de cotejo.",
+      doList: [
+        "Finalize a produção do capítulo.",
+        "Encaminhe o capítulo para a <b>etapa de cotejo</b>.",
+        "Aguarde o retorno com os apontamentos."
+      ],
+      check: ["O capítulo foi encaminhado para o cotejo"],
+      attn: [],
+      todo: "Explicar como o capítulo é encaminhado ao cotejo (planilha, aviso no chat, outra forma) e quem faz essa etapa."
+    },
+    {
+      n: 11, phase: 3, title: "Aplicar os ajustes do cotejo",
+      tool: "O mesmo HTML do passo 7", access: "Nenhum acesso extra", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
+      lead: "Nem todo apontamento precisa virar mudança. Você decide com critério.",
+      doList: [
+        "Leia os ajustes apontados no cotejo.",
+        "Aplique os que <b>fazem sentido</b>. Se o ajuste pedir outro código ou outro padrão de atividade, procure na Biblioteca de códigos do LD.",
+        "Se discordar de algum, siga a regra do time para justificar."
+      ],
+      check: ["Li todos os apontamentos", "Apliquei os que fazem sentido"],
+      attn: ["Aplicar sem avaliar também é risco: o cotejo pode apontar algo que o PDF original não pede."],
+      todo: "Registrar como o time trata os ajustes que não fazem sentido (responde no próprio apontamento, avisa quem fez o cotejo etc.)."
+    },
+    {
+      n: 12, phase: 4, title: "Subir o capítulo no Bigodão e registrar o link",
+      tool: "Bigodão, portal e planilha de controle", access: "Acesso ao Bigodão e ao portal",
+      lead: "O capítulo só conta como entregue quando o link está na planilha.",
+      path: ["Bigodão", "Portal", "Livro do ano", "Link do capítulo", "Planilha"],
+      doPath: true,
+      cred: true,
+      doList: [
+        "Entre no <a href='https://bigodao.sae.digital/livro-digital/chapters' target='_blank' rel='noopener'>Bigodão</a> com o login que o time te enviar e suba o capítulo na área de capítulos do Livro Digital.",
+        "Abra o <b>livro do ano correspondente</b> no portal.",
+        "Pegue o <b>link do capítulo</b>.",
+        "Cole o link na linha do capítulo na planilha."
+      ],
+      check: ["O capítulo abre no portal", "O link está na linha certa da planilha"],
+      attn: ["Abra o link depois de colar na planilha para ter certeza de que é o capítulo certo."]
+    },
+    {
+      n: 13, phase: 4, title: "Fechar o volume e liberar o pagamento",
+      tool: "Planilha GOPP - DIGITAL - Solicitações de Pagamento", access: "Edição na planilha GOPP", links: [["Abrir a planilha de pagamentos", "https://docs.google.com/spreadsheets/d/1ghghzTj_Ybm2mTqaAm_2YeJcfODaSWPTyiln_kNNYsM/edit?usp=sharing"]],
+      lead: "O pagamento das freelas depende da contagem de capítulos por pessoa.",
+      doList: [
+        "Espere o <b>volume ser finalizado</b>.",
+        "Conte quantos capítulos <b>cada freela</b> fez.",
+        "Libere o pagamento na planilha <span class='ui'>GOPP - DIGITAL - Solicitações de Pagamento</span>."
+      ],
+      check: ["Contei os capítulos de cada freela", "O pagamento foi liberado na planilha GOPP"],
+      attn: ["A contagem deve bater com os capítulos registrados na planilha do volume."]
+    }
+  ];
+
+  var TOOLS = [
+    ["Assets", "Baixar o PDF do professor", "1", "https://arco-dam.eos.woodwing.cloud/app/#/ssoOIDCLogin"],
+    ["Divisor de PDF", "Dividir o PDF por disciplina", "2", "https://divisor-pdf.netlify.app/"],
+    ["Drive compartilhado Livro Digital", "Guardar PDFs, HTML e imagens", "3, 6, 8", ""],
+    ["Planilha de controle do volume", "Reservar capítulo e registrar o link", "4, 12", ""],
+    ["DIA LD", "Gerar JSON, extrair imagens, ALT por IA e HTML", "5, 7", ""],
+    ["Biblioteca de códigos do LD", "Consultar códigos, padrões e questões interativas", "9, 11", "https://luizsb.github.io/Biblioteca_LD/"],
+    ["Bigodão e portal", "Publicar o capítulo (login enviado pelo Slack ou no encontro)", "12", "https://bigodao.sae.digital/livro-digital/chapters"],
+    ["Planilha GOPP - DIGITAL - Solicitações de Pagamento", "Liberar o pagamento das freelas", "13", "https://docs.google.com/spreadsheets/d/1ghghzTj_Ybm2mTqaAm_2YeJcfODaSWPTyiln_kNNYsM/edit?usp=sharing"]
+  ];
+
+  var GLOSS = [
+    ["LD", "Livro Digital, o produto que este fluxo entrega."],
+    ["SAE", "Linha de livros à qual este tutorial se aplica. Aqui está o fluxo de criação dos livros digitais novos, feito internamente pelo time. O aproveitamento é terceirizado e fica fora daqui."],
+    ["DIA LD", "Ferramenta que recebe o PDF e devolve o HTML do capítulo com as imagens, gerando o JSON e o ALT no caminho."],
+    ["JSON", "Arquivo de dados que o DIA LD gera a partir do PDF para montar o HTML."],
+    ["ALT", "Texto alternativo das imagens, gerado com IA dentro do DIA LD."],
+    ["Biblioteca de códigos", "Página com os códigos mais usados no livro, padrões e questões interativas. Ajuda a decidir qual código aplicar."],
+    ["Bookmarks", "Marcadores do PDF, que podem já trazer os capítulos separados por disciplina."],
+    ["Cotejo", "Etapa de conferência do capítulo depois de produzido, que devolve apontamentos de ajuste."],
+    ["Bigodão", "Ferramenta onde o capítulo é subido antes de ganhar link no portal. Fica em bigodao.sae.digital."],
+    ["Freela", "Pessoa que produz capítulos e recebe por quantidade entregue."]
+  ];
+
+  var MEETINGS = [
+    ["Encontro 1", "Visão geral, acessos e passos 1 a 3", "Preparação: baixar, cortar e organizar no Drive."],
+    ["Encontro 2", "Passos 4 a 8", "Produção: escolher o capítulo e gerar o HTML no DIA LD."],
+    ["Encontro 3", "Passos 9 a 11", "Validação: PDF contra HTML, cotejo e ajustes."],
+    ["Encontro 4", "Passos 12 e 13", "Publicação no Bigodão e fluxo de pagamento."]
+  ];
+
+  var store = { done: {}, checks: {} };
+  var KEY = "tutorial-ld-v1"; var canSave = false;
+  function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+  var PAGES = [
+    { id: "visao-geral", title: "Visão geral", group: null },
+    { id: "acessos", title: "Acessos e ferramentas", group: null },
+    { id: "encontros", title: "Plano de encontros", group: null }
+  ];
+  STEPS.forEach(function (s) { s.id = "passo-" + s.n; });
+  var EXTRA_END = [{ id: "glossario", title: "Glossário" }];
+  var ORDER = PAGES.map(function (p) { return p.id; }).concat(STEPS.map(function (s) { return s.id; })).concat(EXTRA_END.map(function (p) { return p.id; }));
+
+  var navEl = document.getElementById("nav");
+  var mainEl = document.getElementById("main");
+  var sideEl = document.getElementById("side");
+
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function phaseOf(s) { return PHASES[s.phase - 1]; }
+
+  function buildNav(current) {
+    var h = "";
+    PAGES.forEach(function (p) {
+      h += '<a href="#' + p.id + '"' + (current === p.id ? ' aria-current="page"' : "") + '><span class="plain">&#9679;</span>' + p.title + "</a>";
+    });
+    PHASES.forEach(function (ph) {
+      h += '<div class="nav-group"><i style="background:' + ph.color + '"></i>' + ph.name + "</div>";
+      STEPS.filter(function (s) { return s.phase === ph.id; }).forEach(function (s) {
+        var d = store.done[s.id];
+        h += '<a href="#' + s.id + '" class="' + (d ? "done" : "") + '"' + (current === s.id ? ' aria-current="page"' : "") + '><span class="num">' + (d ? "&#10003;" : s.n) + "</span>" + esc(s.title) + "</a>";
+      });
+    });
+    h += '<div class="nav-group"><i style="background:var(--muted)"></i>Referência</div>';
+    EXTRA_END.forEach(function (p) {
+      h += '<a href="#' + p.id + '"' + (current === p.id ? ' aria-current="page"' : "") + '><span class="plain">&#9679;</span>' + p.title + "</a>";
+    });
+    navEl.innerHTML = h;
+    var count = STEPS.filter(function (s) { return store.done[s.id]; }).length;
+    document.getElementById("saveNote").textContent = canSave ? "Seu progresso fica salvo neste navegador." : "Este navegador bloqueou o salvamento. O progresso vale só enquanto a página estiver aberta.";
+    document.getElementById("progText").textContent = count + " de " + STEPS.length + " passos";
+    document.getElementById("progBar").style.width = (count / STEPS.length * 100) + "%";
+  }
+
+  function pager(id) {
+    var i = ORDER.indexOf(id), prev = ORDER[i - 1], next = ORDER[i + 1];
+    function label(x) {
+      var s = STEPS.filter(function (q) { return q.id === x; })[0];
+      if (s) return "Passo " + s.n;
+      var all = PAGES.concat(EXTRA_END).filter(function (q) { return q.id === x; })[0];
+      return all ? all.title : x;
+    }
+    return '<div class="pager">' +
+      (prev ? '<a class="btn" href="#' + prev + '">&larr; ' + label(prev) + "</a>" : "<span></span>") +
+      (next ? '<a class="btn primary" href="#' + next + '">' + label(next) + " &rarr;</a>" : "") + "</div>";
+  }
+
+  function pageVisao() {
+    var h = '<div class="page"><div class="hero"><img src="digi.png" alt="Digi, o robô guia do tutorial"><div><p class="eyebrow" style="color:var(--accent)">Guia prático</p>' +
+      "<h1>Como criar um Livro Digital novo do SAE, do PDF ao pagamento</h1>" +
+      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até o pagamento da freela. Faça cada passo na ferramenta, marque o que concluiu e avance.</p></div></div>' +
+      '<div class="phase-map">';
+    PHASES.forEach(function (ph) {
+      var first = STEPS.filter(function (s) { return s.phase === ph.id; })[0];
+      h += '<a href="#' + first.id + '" style="--c:' + ph.color + '"><small>' + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></a>";
+    });
+    h += "</div>" +
+      "<h2>Como usar este tutorial</h2>" +
+      '<div class="grid two">' +
+      '<div class="card"><strong>Um passo por vez.</strong><br>Cada passo tem o que fazer, o que conferir antes de seguir e os pontos de atenção.</div>' +
+      '<div class="card"><strong>Seu progresso fica salvo.</strong><br>As marcações ficam neste navegador. Em outro aparelho, você começa do zero.</div>' +
+      "</div>" +
+      "<h2>Projeto de exemplo</h2>" +
+      '<p>O fluxo usa como exemplo <b>um capítulo de Geografia, 5º ano</b>, de um volume novo (V2) com HTML de referência do V1. Qualquer disciplina segue o mesmo caminho.</p>' +
+      '<div class="attn"><strong>Escopo.</strong> Este guia cobre a criação dos livros digitais novos do SAE, que o time faz internamente. O aproveitamento é terceirizado e não entra aqui.</div>' +
+      '<div class="finish"><span>' + (store.last && store.last !== "passo-1" || Object.keys(store.done).length ? "Você já começou." : "Pronto para começar?") + '</span><span>' + (store.last && /^passo-/.test(store.last) ? '<a class="btn primary" href="#' + store.last + '">Continuar no ' + store.last.replace("passo-", "passo ") + ' &rarr;</a> ' : "") + '<a class="btn' + (store.last && /^passo-/.test(store.last) ? "" : " primary") + '" href="#acessos">Ver acessos e ferramentas</a></span></div>' +
+      "</div>";
+    return h;
+  }
+
+  function pageAcessos() {
+    var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Antes do passo 1</p><h1>Acessos e ferramentas</h1>' +
+      '<p class="lead">Peça estes acessos antes de começar. Sem eles, o fluxo trava no meio.</p>' +
+      '<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Para quê</th><th>Passos</th></tr></thead><tbody>';
+    TOOLS.forEach(function (t) { h += "<tr><td><b>" + (t[3] ? '<a href="' + t[3] + '" target="_blank" rel="noopener">' + esc(t[0]) + "</a>" : esc(t[0])) + "</b></td><td>" + esc(t[1]) + "</td><td>" + esc(t[2]) + "</td></tr>"; });
+    h += "</tbody></table></div>" +
+      '<h2>Lista para pedir os acessos</h2><ul class="checks">';
+    TOOLS.forEach(function (t, i) {
+      var k = "acc-" + i;
+      h += '<li><label><input type="checkbox" data-k="' + k + '"' + (store.checks[k] ? " checked" : "") + "><span>" + esc(t[0]) + "</span></label></li>";
+    });
+    h += '</ul><div style="height:16px"></div><div class="todo">A completar: link do DIA LD, da pasta do Drive e da planilha de controle do volume, e quem libera cada acesso.</div>' + pager("acessos") + "</div>";
+    return h;
+  }
+
+  function pageEncontros() {
+    var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Sugestão de calendário</p><h1>Plano de encontros</h1>' +
+      '<p class="lead">Quatro encontros, um por fase, para fechar o treinamento até <b>11/12</b>. Cada encontro é prático: a pessoa faz, o time acompanha.</p>' +
+      '<div class="tablewrap"><table><thead><tr><th>Encontro</th><th>Conteúdo</th><th>Entrega</th></tr></thead><tbody>';
+    MEETINGS.forEach(function (m) { h += "<tr><td><b>" + m[0] + "</b></td><td>" + m[1] + "</td><td>" + m[2] + "</td></tr>"; });
+    h += '</tbody></table></div><div style="height:16px"></div><div class="attn"><strong>Ajuste as datas.</strong> Marque os encontros conforme a agenda do time e a data de recebimento do segmento escolhido.</div>' + pager("encontros") + "</div>";
+    return h;
+  }
+
+  function pageGlossario() {
+    var h = '<div class="page"><p class="eyebrow" style="color:var(--muted)">Referência</p><h1>Glossário</h1><p class="lead">Os termos que aparecem ao longo do fluxo.</p><dl class="gloss">';
+    GLOSS.forEach(function (g) { h += "<div><dt>" + esc(g[0]) + "</dt><dd>" + g[1] + "</dd></div>"; });
+    h += "</dl>" + pager("glossario") + "</div>";
+    return h;
+  }
+
+
+  function credBlock() {
+    return '<h2>Login do Bigodão</h2><div class="cred"><a href="https://bigodao.sae.digital/livro-digital/chapters" target="_blank" rel="noopener">https://bigodao.sae.digital/livro-digital/chapters</a>' +
+      '<p style="margin:0">O login e a senha do Bigodão são enviados pelo Slack ou passados durante o encontro. Eles não ficam nesta página por segurança dos dados.</p></div>';
+  }
+
+  function pageStep(s) {
+    var ph = phaseOf(s);
+    var h = '<div class="page"><p class="eyebrow" style="color:' + ph.color + '"><i style="background:' + ph.color + '"></i>' + ph.name + " &middot; Passo " + s.n + " de " + STEPS.length + "</p>" +
+      "<h1>" + esc(s.title) + "</h1><p class='lead'>" + s.lead + "</p>" +
+      '<p style="margin:0 0 18px"><span class="pill">' + esc(s.tool) + "</span> &nbsp;<span style='color:var(--muted);font-size:14px'>Acesso: " + esc(s.access) + "</span></p>";
+    if (s.links) {
+      h += '<div class="links">' + s.links.map(function (l) { return '<a class="btn" href="' + l[1] + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>'; }).join("") + "</div>";
+    }
+    if (s.path) {
+      h += '<p class="path-label">Caminho</p><div class="path">' + s.path.map(function (p) { return "<span>" + esc(p) + "</span>"; }).join("<b>&rarr;</b>") + "</div><div style='height:18px'></div>";
+    }
+    h += "<h2 style='margin-top:6px'>O que fazer</h2><ol class='do'>" + s.doList.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ol>";
+    if (s.cred) h += credBlock();
+    h += "<h2>Confira antes de seguir</h2><ul class='checks'>";
+    s.check.forEach(function (c, i) {
+      var k = s.id + "-c" + i;
+      h += '<li><label><input type="checkbox" data-k="' + k + '"' + (store.checks[k] ? " checked" : "") + "><span>" + esc(c) + "</span></label></li>";
+    });
+    h += "</ul>";
+    if (s.attn && s.attn.length) {
+      h += "<h2>Pontos de atenção</h2><div class='attn'><ul>" + s.attn.map(function (a) { return "<li>" + a + "</li>"; }).join("") + "</ul></div>";
+    }
+    if (s.todo) { h += "<div style='height:14px'></div><div class='todo'>A completar: " + esc(s.todo) + "</div>"; }
+    var d = !!store.done[s.id];
+    var nChk = s.check.filter(function (c, i) { return store.checks[s.id + "-c" + i]; }).length;
+    var hasNext = s.n < STEPS.length;
+    h += '<div class="finish"><span>' + (d ? "Passo concluído." : "Conferências feitas: " + nChk + " de " + s.check.length) + '</span><button type="button" class="btn ' + (d ? "done" : "primary") + '" id="doneBtn">' + (d ? "Concluído (clique para desfazer)" : (hasNext ? "Concluir e ir para o próximo passo" : "Concluir passo")) + "</button></div>";
+    h += pager(s.id) + "</div>";
+    return h;
+  }
+
+  function render() {
+    var id = (location.hash || "").replace("#", "");
+    if (ORDER.indexOf(id) < 0) id = "visao-geral";
+    var step = STEPS.filter(function (s) { return s.id === id; })[0];
+    var html;
+    if (step) html = pageStep(step);
+    else if (id === "visao-geral") html = pageVisao();
+    else if (id === "acessos") html = pageAcessos();
+    else if (id === "encontros") html = pageEncontros();
+    else html = pageGlossario();
+    mainEl.innerHTML = html;
+    buildNav(id);
+    sideEl.classList.remove("open");
+    document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
+    var names = { "visao-geral": "Visão geral", acessos: "Acessos e ferramentas", encontros: "Plano de encontros", glossario: "Glossário" };
+    document.title = (step ? "Passo " + step.n + ": " + step.title : names[id]) + " · Livros Digitais novos do SAE";
+    if (step) { store.last = step.id; save(); }
+    document.getElementById("scrim").classList.remove("on");
+    window.scrollTo(0, 0);
+    if (window.__navd) { mainEl.focus({ preventScroll: true }); }
+    window.__navd = true;
+    Array.prototype.forEach.call(mainEl.querySelectorAll("input[type=checkbox]"), function (cb) {
+      cb.addEventListener("change", function () { store.checks[cb.getAttribute("data-k")] = cb.checked; save(); });
+    });
+    var btn = document.getElementById("doneBtn");
+    if (btn && step) {
+      btn.addEventListener("click", function () {
+        store.done[step.id] = !store.done[step.id];
+        save();
+        if (store.done[step.id]) {
+          var i = ORDER.indexOf(step.id), nx = ORDER[i + 1];
+          if (nx) { location.hash = nx; return; }
+        }
+        render();
+      });
+    }
+  }
+
+  function closeMenu() {
+    sideEl.classList.remove("open");
+    document.getElementById("scrim").classList.remove("on");
+    document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
+  }
+  document.getElementById("menuBtn").addEventListener("click", function () {
+    var open = sideEl.classList.toggle("open");
+    document.getElementById("scrim").classList.toggle("on", open);
+    this.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.getElementById("skipLink").addEventListener("click", function (e) { e.preventDefault(); mainEl.focus(); });
+  document.getElementById("scrim").addEventListener("click", closeMenu);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && sideEl.classList.contains("open")) { closeMenu(); document.getElementById("menuBtn").focus(); }
+  });
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!window.__confirmReset) {
+      window.__confirmReset = true;
+      this.textContent = "Clique de novo para confirmar";
+      var b = this;
+      setTimeout(function () { window.__confirmReset = false; b.textContent = "Limpar meu progresso"; }, 4000);
+      return;
+    }
+    store = { done: {}, checks: {} };
+    save();
+    window.__confirmReset = false;
+    this.textContent = "Limpar meu progresso";
+    render();
+  });
+  window.addEventListener("hashchange", render);
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
