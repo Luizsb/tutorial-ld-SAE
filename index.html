@@ -116,10 +116,12 @@ ol.do li { counter-increment: s; position: relative; background: var(--surface);
 ol.do li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
 .ui { font-family: var(--font-mono); font-size: 13.5px; background: var(--accent-soft); border-radius: 5px; padding: 1px 7px; white-space: nowrap; }
 
-.checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.checks label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; max-width: 70ch; }
+.checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-width: 70ch; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; flex: 1; min-width: 0; }
 .checks input { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--ok); flex: none; }
 .checks input:checked + span { color: var(--muted); text-decoration: line-through; }
+.checks .check-row { display: flex; gap: 8px; align-items: stretch; }
+.checks .check-row > .btn { align-self: center; flex: none; }
 
 .attn { background: var(--warn-soft); border-left: 4px solid var(--warn); border-radius: 8px; padding: 12px 16px; max-width: 70ch; }
 .attn ul { margin: 0; padding-left: 18px; }
@@ -501,7 +503,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   function pageVisao() {
     var h = '<div class="page"><div class="hero"><img src="digi.png" alt="Digi, o robô guia do tutorial"><div><p class="eyebrow" style="color:var(--accent)">Guia prático</p>' +
       "<h1>Como criar um Livro Digital novo do SAE, do PDF ao pagamento</h1>" +
-      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até o pagamento da freela. Faça cada passo na ferramenta, marque o que concluiu e avance.</p></div></div>' +
+      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até a liberação do pagamento. Faça cada passo na ferramenta, marque o que concluiu e avance.</p></div></div>' +
       '<div class="phase-map">';
     PHASES.forEach(function (ph) {
       var first = STEPS.filter(function (s) { return s.phase === ph.id; })[0];
@@ -523,16 +525,18 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 
   function pageAcessos() {
     var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Antes do passo 1</p><h1>Acessos e ferramentas</h1>' +
-      '<p class="lead">Peça estes acessos antes de começar. Sem eles, o fluxo trava no meio.</p>' +
-      '<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Para quê</th><th>Passos</th></tr></thead><tbody>';
-    TOOLS.forEach(function (t) { h += "<tr><td><b>" + (t[3] ? '<a href="' + t[3] + '" target="_blank" rel="noopener">' + esc(t[0]) + "</a>" : esc(t[0])) + "</b></td><td>" + esc(t[1]) + "</td><td>" + esc(t[2]) + "</td></tr>"; });
-    h += "</tbody></table></div>" +
-      '<h2>Lista para pedir os acessos</h2><ul class="checks">';
+      '<p class="lead">Antes de começar, verifique se consegue usar cada ferramenta. Em alguns casos basta abrir o link; em outros, como Drive ou planilha, pode ser preciso pedir acesso ao time. No DIA LD, confira se consegue baixar e rodar o executável.</p>' +
+      '<h2>Verifique se você consegue usar</h2><ul class="checks">';
     TOOLS.forEach(function (t, i) {
       var k = "acc-" + i;
-      h += '<li><label><input type="checkbox" data-k="' + k + '"' + (store.checks[k] ? " checked" : "") + "><span>" + esc(t[0]) + "</span></label></li>";
+      var label = "Consigo usar: <b>" + esc(t[0]) + "</b> — " + esc(t[1]) + " (passos " + esc(t[2]) + ")";
+      h += '<li class="check-row"><label><input type="checkbox" data-k="' + k + '"' + (store.checks[k] ? " checked" : "") + "><span>" + label + "</span></label>";
+      if (t[3]) {
+        h += '<a class="btn" href="' + t[3] + '" target="_blank" rel="noopener">Abrir &#8599;</a>';
+      }
+      h += "</li>";
     });
-    h += '</ul><div style="height:16px"></div><div class="todo">A completar: link do DIA LD, da pasta do Drive e da planilha de controle do volume, e quem libera cada acesso.</div>' + pager("acessos") + "</div>";
+    h += "</ul>" + pager("acessos") + "</div>";
     return h;
   }
 
