@@ -153,12 +153,34 @@ dl.gloss > div { background: var(--surface); border: 1px solid var(--line); bord
 dl.gloss dt { font-weight: 600; font-family: var(--font-mono); font-size: 14px; }
 dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
-.phase-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 8px; }
-.phase-map a, .phase-map .phase-card { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 12px 14px; display: block; }
+.phase-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 8px 0 14px; }
+.phase-map a, .phase-map .phase-card {
+  position: relative; text-decoration: none; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 14px;
+  padding: 16px 16px 18px; display: block; min-height: 100%;
+}
 .phase-map a:hover { border-color: var(--c); }
-.phase-map .phase-card.locked { opacity: .72; }
-.phase-map small { color: var(--muted); display: block; }
-.phase-map strong { font-family: var(--font-display); font-size: 17px; }
+.phase-map .phase-card.locked { opacity: .78; cursor: default; }
+.phase-map .phase-card.locked:hover { opacity: 1; border-color: var(--c); }
+.phase-map .lock-ico {
+  position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; color: var(--muted);
+}
+.phase-map .lock-tip {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%) translateY(4px);
+  background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  padding: 5px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.phase-map .lock-tip::after {
+  content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--ink);
+}
+.phase-map .phase-card.locked:hover .lock-tip,
+.phase-map .phase-card.locked:focus-within .lock-tip {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+.phase-map small { color: var(--muted); display: block; line-height: 1.4; }
+.phase-map strong { font-family: var(--font-display); font-size: 17px; display: block; margin: 6px 0 8px; padding-right: 22px; }
 .meet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 8px 0 18px; }
 .meet-card {
   background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 20px 18px;
@@ -1007,7 +1029,10 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       if (unlocked) {
         h += '<a href="#' + first.id + '" style="--c:' + ph.color + '"><small>' + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></a>";
       } else {
-        h += '<div class="phase-card locked" style="--c:' + ph.color + '"><small>' + ph.range + " · bloqueado</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></div>";
+        h += '<div class="phase-card locked" style="--c:' + ph.color + '" tabindex="0" aria-label="' + esc(ph.name) + ', bloqueado">' +
+          '<span class="lock-tip">bloqueado</span>' +
+          '<svg class="lock-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm7 14H7V10h10v10zm-5-1a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>' +
+          "<small>" + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></div>";
       }
     });
     h += "</div>" +
