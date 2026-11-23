@@ -388,16 +388,17 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     },
     {
       n: 9, phase: 3, title: "Conferir PDF e HTML lado a lado",
-      tool: "PDF aberto ao lado do HTML no navegador", access: "Nenhum acesso extra", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
+      tool: "PDF, navegador e editor de código (VS Code ou Cursor)", access: "Visual Studio Code ou Cursor instalado", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
       lead: "A conferência é a principal garantia de qualidade da sua entrega.",
       doList: [
-        "Abra o <b>PDF</b> e o <b>HTML gerado</b> lado a lado.",
+        "Abra o <b>PDF</b> e o <b>HTML gerado</b> lado a lado no navegador.",
+        "Abra o <b>código-fonte do HTML</b> no <span class='ui'>Visual Studio Code</span> ou no <span class='ui'>Cursor</span> — é nele que você lê e ajusta o livro digital.",
         "Vá batendo se o conteúdo do PDF consta no HTML.",
         "Valide também as <b>atividades interativas</b>.",
         "Ficou em dúvida sobre qual código aplicar? Consulte a <a href='https://luizsb.github.io/Biblioteca_LD/' target='_blank' rel='noopener'>Biblioteca de códigos do LD</a>: ela reúne os códigos mais usados no livro, padrões e questões interativas."
       ],
-      check: ["Todo o conteúdo do PDF aparece no HTML", "Imagens estão nos lugares certos", "As atividades interativas funcionam"],
-      attn: ["Atividades interativas pedem teste de verdade: clique, responda e veja o retorno."]
+      check: ["Todo o conteúdo do PDF aparece no HTML", "Imagens estão nos lugares certos", "As atividades interativas funcionam", "Consigo abrir o HTML no VS Code ou no Cursor"],
+      attn: ["Sem editor instalado (Visual Studio Code ou Cursor), fica difícil revisar e corrigir o código-fonte do capítulo.", "Atividades interativas pedem teste de verdade: clique, responda e veja o retorno."]
     },
     {
       n: 10, phase: 3, title: "Passar pelo cotejo",
@@ -414,15 +415,16 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     },
     {
       n: 11, phase: 3, title: "Aplicar os ajustes do cotejo",
-      tool: "O mesmo HTML do passo 7", access: "Nenhum acesso extra", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
+      tool: "HTML no Visual Studio Code ou Cursor", access: "Visual Studio Code ou Cursor instalado", links: [["Biblioteca de códigos do LD", "https://luizsb.github.io/Biblioteca_LD/"]],
       lead: "Nem todo apontamento precisa virar mudança. Você decide com critério.",
       doList: [
         "Leia os ajustes apontados no cotejo.",
+        "Abra o <b>código-fonte do capítulo</b> no <span class='ui'>Visual Studio Code</span> ou no <span class='ui'>Cursor</span>.",
         "Aplique os que <b>fazem sentido</b>. Se o ajuste pedir outro código ou outro padrão de atividade, procure na Biblioteca de códigos do LD.",
         "Se discordar de algum, siga a regra do time para justificar."
       ],
-      check: ["Li todos os apontamentos", "Apliquei os que fazem sentido"],
-      attn: ["Aplicar sem avaliar também é risco: o cotejo pode apontar algo que o PDF original não pede."],
+      check: ["Li todos os apontamentos", "Apliquei os que fazem sentido no editor", "Salvei o HTML depois das alterações"],
+      attn: ["Os ajustes do cotejo entram no código-fonte do livro digital; por isso o editor (VS Code ou Cursor) precisa estar instalado.", "Aplicar sem avaliar também é risco: o cotejo pode apontar algo que o PDF original não pede."],
       todo: "Registrar como o time trata os ajustes que não fazem sentido (responde no próprio apontamento, avisa quem fez o cotejo etc.)."
     },
     {
@@ -461,6 +463,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ["Drive compartilhado Livro Digital", "Guardar PDFs, HTML e imagens", "3, 6, 8", ""],
     ["Planilha de controle do volume", "Reservar capítulo e registrar o link", "4, 12", ""],
     ["DIA LD", "Gerar JSON, extrair imagens, ALT por IA e HTML", "5, 7", ""],
+    ["Visual Studio Code ou Cursor", "Abrir e editar o código-fonte do livro digital (HTML)", "9, 11", ""],
     ["Biblioteca de códigos do LD", "Consultar códigos, padrões e questões interativas", "9, 11", "https://luizsb.github.io/Biblioteca_LD/"],
     ["Bigodão e portal", "Publicar o capítulo (login enviado pelo Slack ou no encontro)", "12", "https://bigodao.sae.digital/livro-digital/chapters"],
     ["Planilha GOPP - DIGITAL - Solicitações de Pagamento", "Liberar o pagamento das freelas", "13", "https://docs.google.com/spreadsheets/d/1ghghzTj_Ybm2mTqaAm_2YeJcfODaSWPTyiln_kNNYsM/edit?usp=sharing"]
@@ -473,6 +476,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ["JSON", "Arquivo de dados que o DIA LD gera a partir do PDF para montar o HTML."],
     ["ALT", "Texto alternativo das imagens, gerado com IA dentro do DIA LD."],
     ["Biblioteca de códigos", "Página com os códigos mais usados no livro, padrões e questões interativas. Ajuda a decidir qual código aplicar."],
+    ["Visual Studio Code / Cursor", "Editores para abrir o código-fonte do livro digital (HTML). Precisam estar instalados antes da validação e dos ajustes do cotejo."],
     ["Bookmarks", "Marcadores do PDF usados no Assistente de Divisão. No SAE, carregar com o modelo do SAS costuma separar melhor por disciplina."],
     ["Cotejo", "Etapa de conferência do capítulo depois de produzido, que devolve apontamentos de ajuste."],
     ["Bigodão", "Ferramenta onde o capítulo é subido antes de ganhar link no portal. Fica em bigodao.sae.digital."],
@@ -979,7 +983,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 
   function pageAcessos() {
     var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Antes do passo 1</p><h1>Acessos e ferramentas</h1>' +
-      '<p class="lead">Antes de começar, verifique se consegue usar cada ferramenta. Em alguns casos basta abrir o link; em outros, como Drive ou planilha, pode ser preciso pedir acesso ao time. No DIA LD, confira se consegue baixar e rodar o executável.</p>' +
+      '<p class="lead">Antes de começar, verifique se consegue usar cada ferramenta. Em alguns casos basta abrir o link; em outros, como Drive ou planilha, pode ser preciso pedir acesso ao time. No DIA LD, confira se consegue baixar e rodar o executável. Para abrir o código-fonte do livro digital, tenha o <b>Visual Studio Code</b> ou o <b>Cursor</b> instalado.</p>' +
       '<h2>Verifique se você consegue usar</h2><ul class="checks">';
     TOOLS.forEach(function (t, i) {
       var k = "acc-" + i;
