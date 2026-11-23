@@ -1174,18 +1174,19 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       return '<a class="btn has-clip' + (c.primary ? " primary" : "") + '" href="' + appHref + '">' + CLIP_ICO + esc(c.label) + " &#8599;</a>";
     }).join("");
   }
-  var helpBubbleTimer = 0;
-  function showHelpBubbleBriefly() {
-    if (!helpBubble || !helpPanel.hidden) return;
-    helpBubble.classList.add("is-on");
-    clearTimeout(helpBubbleTimer);
-    helpBubbleTimer = setTimeout(function () {
-      if (helpPanel.hidden) helpBubble.classList.remove("is-on");
-    }, 4500);
-  }
-  function scheduleHelpBubble() {
-    showHelpBubbleBriefly();
-    setTimeout(scheduleHelpBubble, 14000 + Math.random() * 10000);
+  var helpRoot = document.getElementById("helpDigi");
+  var helpBubbleHideTimer = 0;
+  function setHelpBubbleVisible(on) {
+    if (!helpBubble) return;
+    clearTimeout(helpBubbleHideTimer);
+    if (on) {
+      if (!helpPanel.hidden) return;
+      helpBubble.classList.add("is-on");
+    } else {
+      helpBubbleHideTimer = setTimeout(function () {
+        if (helpPanel.hidden) helpBubble.classList.remove("is-on");
+      }, 160);
+    }
   }
   function setHelpOpen(open) {
     if (!helpPanel) return;
@@ -1193,16 +1194,22 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     helpBubble.setAttribute("aria-expanded", open ? "true" : "false");
     helpToggle.setAttribute("aria-expanded", open ? "true" : "false");
     if (open) helpBubble.classList.remove("is-on");
-    else showHelpBubbleBriefly();
   }
   function toggleHelp() { setHelpOpen(helpPanel.hidden); }
   helpBubble.addEventListener("click", toggleHelp);
   helpToggle.addEventListener("click", toggleHelp);
+  helpRoot.addEventListener("mouseenter", function () { setHelpBubbleVisible(true); });
+  helpRoot.addEventListener("mouseleave", function () { setHelpBubbleVisible(false); });
+  helpToggle.addEventListener("focus", function () { setHelpBubbleVisible(true); });
+  helpToggle.addEventListener("blur", function () {
+    setTimeout(function () {
+      if (!helpRoot.contains(document.activeElement)) setHelpBubbleVisible(false);
+    }, 0);
+  });
   document.addEventListener("click", function (e) {
     if (!helpPanel || helpPanel.hidden) return;
-    if (!document.getElementById("helpDigi").contains(e.target)) setHelpOpen(false);
+    if (!helpRoot.contains(e.target)) setHelpOpen(false);
   });
-  setTimeout(scheduleHelpBubble, 2500);
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && document.getElementById("celebrate")) { closeCelebrate(); return; }
