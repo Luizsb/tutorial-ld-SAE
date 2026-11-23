@@ -508,6 +508,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   function phaseOf(s) { return PHASES[s.phase - 1]; }
   function allStepsDone() { return STEPS.every(function (s) { return !!store.done[s.id]; }); }
   var CLIP_ICO = '<svg class="clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.5 6.5v10a4.5 4.5 0 0 1-9 0V6.75a2.75 2.75 0 0 1 5.5 0V16a1 1 0 1 1-2 0V7.5a.75.75 0 0 0-1.5 0v9a3 3 0 0 0 6 0V6.75a4.25 4.25 0 0 0-8.5 0V16.5a5.75 5.75 0 0 0 11.5 0V8.25a.75.75 0 0 0-1.5 0z"/></svg>';
+  var DOWNLOAD_ICO = '<svg class="clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z"/></svg>';
   function linkBtn(label, href) {
     return '<a class="btn has-clip" href="' + href + '" target="_blank" rel="noopener">' + CLIP_ICO + esc(label) + ' &#8599;</a>';
   }
@@ -856,9 +857,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       "</div>" +
       '<div class="cert-preview-wrap"><canvas id="certCanvas" width="1600" height="1132" aria-label="Prévia do certificado"></canvas></div>' +
       '<div class="btns">' +
-        '<button type="button" class="btn" id="certBack">Voltar</button>' +
         '<button type="button" class="btn" id="celebrateClose">Fechar</button>' +
-        '<button type="button" class="btn primary" id="certDownload">Baixar imagem</button>' +
+        '<button type="button" class="btn primary has-clip" id="certDownload">' + DOWNLOAD_ICO + "Baixar imagem</button>" +
       "</div>";
   }
 
@@ -876,11 +876,6 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     card.classList.add("wide");
     card.innerHTML = celebrateCertHtml();
     bindCelebrateChrome(el, false);
-    document.getElementById("certBack").addEventListener("click", function () {
-      card.classList.remove("wide");
-      card.innerHTML = celebrateHomeHtml();
-      wireCelebrateHome(el, false);
-    });
     var input = document.getElementById("certName");
     var canvas = document.getElementById("certCanvas");
     var redraw = function () { drawCertificate(canvas, input.value); };
