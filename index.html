@@ -231,9 +231,46 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   from { opacity: 0; transform: translateY(16px) scale(.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+.help-digi {
+  position: fixed; right: 18px; bottom: 18px; z-index: 40;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: none;
+}
+.help-digi > * { pointer-events: auto; }
+.help-bubble {
+  max-width: 210px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 16px 16px 4px 16px; padding: 10px 14px; font: inherit; font-size: 14px; font-weight: 600;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--ink) 14%, transparent); cursor: pointer; text-align: left;
+  animation: digi-float 3.6s ease-in-out infinite;
+}
+.help-bubble::after {
+  content: ""; position: absolute; right: 22px; bottom: -7px; width: 14px; height: 14px;
+  background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.help-bubble { position: relative; }
+.help-avatar {
+  width: 74px; height: 74px; border: 0; padding: 0; background: transparent; cursor: pointer;
+  animation: digi-float 3.2s ease-in-out infinite;
+}
+.help-avatar img { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--ink) 22%, transparent)); }
+.help-panel {
+  width: min(280px, calc(100vw - 36px)); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px; box-shadow: 0 14px 36px color-mix(in srgb, var(--ink) 16%, transparent);
+}
+.help-panel[hidden] { display: none !important; }
+.help-panel strong { display: block; font-family: var(--font-display); font-size: 16px; margin: 0 0 4px; }
+.help-panel p { margin: 0 0 12px; color: var(--muted); font-size: 13.5px; }
+.help-panel .btns { display: grid; gap: 8px; }
+.help-panel .btns .btn { width: 100%; justify-content: center; }
+@media (max-width: 700px) {
+  .help-digi { right: 12px; bottom: 12px; }
+  .help-avatar { width: 64px; height: 64px; }
+  .help-bubble { font-size: 13px; max-width: 170px; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
-  .hero img, .celebrate-card > img.mascot { animation: none !important; }
+  .hero img, .celebrate-card > img.mascot, .help-avatar, .help-bubble { animation: none !important; }
   .celebrate-card { animation: none !important; }
 }
 </style>
@@ -260,6 +297,17 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     <button class="reset" id="resetBtn" type="button">Limpar meu progresso</button>
   </aside>
   <main class="main" id="main" tabindex="-1"></main>
+</div>
+<div class="help-digi" id="helpDigi">
+  <div class="help-panel" id="helpPanel" hidden>
+    <strong>Posso te ajudar</strong>
+    <p>Chame alguém do time no Slack para tirar dúvida no fluxo.</p>
+    <div class="btns" id="helpSlackLinks"></div>
+  </div>
+  <button type="button" class="help-bubble" id="helpBubble" aria-expanded="false" aria-controls="helpPanel">Precisa de ajuda?</button>
+  <button type="button" class="help-avatar" id="helpToggle" aria-expanded="false" aria-controls="helpPanel" aria-label="Abrir ajuda do Digi">
+    <img src="digi.png" alt="">
+  </button>
 </div>
 
 <script>
@@ -1108,8 +1156,36 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   });
   document.getElementById("skipLink").addEventListener("click", function (e) { e.preventDefault(); mainEl.focus(); });
   document.getElementById("scrim").addEventListener("click", closeMenu);
+  var helpPanel = document.getElementById("helpPanel");
+  var helpBubble = document.getElementById("helpBubble");
+  var helpToggle = document.getElementById("helpToggle");
+  var helpSlack = document.getElementById("helpSlackLinks");
+  var HELP_CONTACTS = [
+    { label: "Chamar no Slack", href: "https://arco.enterprise.slack.com/team/U06U7SX2FDF", primary: true },
+    { label: "Chamar no Slack", href: "https://arco.enterprise.slack.com/team/U0830TU216H", primary: false }
+  ];
+  if (helpSlack) {
+    helpSlack.innerHTML = HELP_CONTACTS.map(function (c) {
+      return '<a class="btn has-clip' + (c.primary ? " primary" : "") + '" href="' + c.href + '" target="_blank" rel="noopener">' + CLIP_ICO + esc(c.label) + " &#8599;</a>";
+    }).join("");
+  }
+  function setHelpOpen(open) {
+    if (!helpPanel) return;
+    helpPanel.hidden = !open;
+    helpBubble.setAttribute("aria-expanded", open ? "true" : "false");
+    helpToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function toggleHelp() { setHelpOpen(helpPanel.hidden); }
+  helpBubble.addEventListener("click", toggleHelp);
+  helpToggle.addEventListener("click", toggleHelp);
+  document.addEventListener("click", function (e) {
+    if (!helpPanel || helpPanel.hidden) return;
+    if (!document.getElementById("helpDigi").contains(e.target)) setHelpOpen(false);
+  });
+
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && document.getElementById("celebrate")) { closeCelebrate(); return; }
+    if (e.key === "Escape" && helpPanel && !helpPanel.hidden) { setHelpOpen(false); return; }
     if (e.key === "Escape" && sideEl.classList.contains("open")) { closeMenu(); document.getElementById("menuBtn").focus(); }
   });
   document.getElementById("resetBtn").addEventListener("click", function () {
