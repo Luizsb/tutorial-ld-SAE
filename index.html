@@ -521,7 +521,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 
   var store = { done: {}, checks: {}, unlocked: false };
   var KEY = "tutorial-ld-v1"; var canSave = false;
-  var UNLOCK_CODE = "ldsae0712";
+  var UNLOCK_CODE = "pato";
   function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; if (typeof store.unlocked !== "boolean") store.unlocked = false; } catch (e) {} }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
   function modulesUnlocked() { return !!store.unlocked; }
