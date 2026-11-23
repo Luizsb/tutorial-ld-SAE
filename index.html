@@ -634,6 +634,46 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     return lines;
   }
 
+  function clearBlackBackground(img, threshold) {
+    var c = document.createElement("canvas");
+    var w = img.naturalWidth || img.width;
+    var h = img.naturalHeight || img.height;
+    c.width = w;
+    c.height = h;
+    var cx = c.getContext("2d");
+    cx.drawImage(img, 0, 0);
+    var data = cx.getImageData(0, 0, w, h);
+    var d = data.data;
+    var seen = new Uint8Array(w * h);
+    var stack = [];
+    function dark(i) { return d[i] < threshold && d[i + 1] < threshold && d[i + 2] < threshold && d[i + 3] > 8; }
+    function push(x, y) {
+      if (x < 0 || y < 0 || x >= w || y >= h) return;
+      stack.push(y * w + x);
+    }
+    for (var x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+    for (var y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+    while (stack.length) {
+      var p = stack.pop();
+      if (seen[p]) continue;
+      seen[p] = 1;
+      var i = p * 4;
+      if (!dark(i)) continue;
+      d[i + 3] = 0;
+      var px = p % w, py = (p / w) | 0;
+      push(px + 1, py); push(px - 1, py); push(px, py + 1); push(px, py - 1);
+    }
+    cx.putImageData(data, 0, 0);
+    return c;
+  }
+
+  function getClearAsset(key, img) {
+    if (!img) return null;
+    var cacheKey = key + "Clear";
+    if (!certAssets[cacheKey]) certAssets[cacheKey] = clearBlackBackground(img, 28);
+    return certAssets[cacheKey];
+  }
+
   function drawCertificate(canvas, personName) {
     var W = 1600, H = 1132;
     canvas.width = W;
@@ -642,6 +682,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     var name = (personName || "").trim() || "Seu nome aqui";
     var today = new Date();
     var dateStr = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+    var logo = getClearAsset("logo", certAssets.logo);
+    var digi = getClearAsset("digi", certAssets.digi);
 
     var g = ctx.createLinearGradient(0, 0, W, H);
     g.addColorStop(0, "#f7f1e6");
@@ -660,7 +702,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ctx.lineWidth = 2;
     ctx.strokeRect(64, 64, W - 128, H - 128);
 
-    function corner(x, y, s, flipX, flipY) {
+    function corner(x, y, flipX, flipY) {
       ctx.save();
       ctx.translate(x, y);
       ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
@@ -677,95 +719,93 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       ctx.fill();
       ctx.restore();
     }
-    corner(88, 88, 1, false, false);
-    corner(W - 88, 88, 1, true, false);
-    corner(88, H - 88, 1, false, true);
-    corner(W - 88, H - 88, 1, true, true);
+    corner(88, 88, false, false);
+    corner(W - 88, 88, true, false);
+    corner(88, H - 88, false, true);
+    corner(W - 88, H - 88, true, true);
 
-    if (certAssets.logo) {
-      var lw = 210, lh = lw * (certAssets.logo.height / certAssets.logo.width);
-      ctx.save();
-      roundRectPath(ctx, W / 2 - lw / 2 - 18, 92, lw + 36, lh + 24, 18);
-      ctx.fillStyle = "#0b1220";
-      ctx.fill();
-      ctx.drawImage(certAssets.logo, W / 2 - lw / 2, 104, lw, lh);
-      ctx.restore();
+    var y = 108;
+    if (logo) {
+      var lw = 150, lh = lw * (logo.height / logo.width);
+      ctx.drawImage(logo, (W - lw) / 2, y, lw, lh);
+      y += lh + 36;
+    } else {
+      y = 150;
     }
 
-    ctx.fillStyle = "#0a63d1";
-    ctx.font = "700 28px \"IBM Plex Sans\", sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("CERTIFICADO DE CONCLUSÃO", W / 2, 310);
+    ctx.fillStyle = "#0a63d1";
+    ctx.font = "700 26px \"IBM Plex Sans\", sans-serif";
+    ctx.fillText("CERTIFICADO DE CONCLUSÃO", W / 2, y);
+    y += 58;
 
     ctx.fillStyle = "#15202b";
-    ctx.font = "700 64px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
-    ctx.fillText("Livros Digitais novos do SAE", W / 2, 390);
+    ctx.font = "700 52px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
+    ctx.fillText("Livros Digitais novos do SAE", W / 2, y);
+    y += 56;
 
     ctx.fillStyle = "#5a6877";
-    ctx.font = "500 28px \"IBM Plex Sans\", sans-serif";
-    ctx.fillText("Certificamos que", W / 2, 470);
+    ctx.font = "500 26px \"IBM Plex Sans\", sans-serif";
+    ctx.fillText("Certificamos que", W / 2, y);
+    y += 70;
 
     ctx.fillStyle = "#7f2a8e";
-    ctx.font = "700 72px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
-    var nameLines = wrapCanvasText(ctx, name, W - 280);
-    var nameY = 560;
-    nameLines.slice(0, 2).forEach(function (ln, i) {
-      ctx.fillText(ln, W / 2, nameY + i * 78);
+    ctx.font = "700 64px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
+    var nameLines = wrapCanvasText(ctx, name, W - 320);
+    nameLines.slice(0, 2).forEach(function (ln) {
+      ctx.fillText(ln, W / 2, y);
+      y += 70;
     });
-    var afterName = nameY + Math.min(nameLines.length, 2) * 78 + 18;
+    y += 8;
 
-    ctx.strokeStyle = "#dbe1e7";
+    ctx.strokeStyle = "#cfd6de";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(W / 2 - 280, afterName);
-    ctx.lineTo(W / 2 + 280, afterName);
+    ctx.moveTo(W / 2 - 260, y);
+    ctx.lineTo(W / 2 + 260, y);
     ctx.stroke();
+    y += 48;
 
     ctx.fillStyle = "#15202b";
-    ctx.font = "500 26px \"IBM Plex Sans\", sans-serif";
+    ctx.font = "500 24px \"IBM Plex Sans\", sans-serif";
     var body = "concluiu todas as etapas do tutorial de criação dos Livros Digitais novos e está apta(o) a produzir capítulos — do PDF do professor à liberação do pagamento.";
-    var bodyLines = wrapCanvasText(ctx, body, W - 320);
-    bodyLines.forEach(function (ln, i) {
-      ctx.fillText(ln, W / 2, afterName + 50 + i * 36);
+    wrapCanvasText(ctx, body, W - 360).forEach(function (ln) {
+      ctx.fillText(ln, W / 2, y);
+      y += 34;
     });
 
-    var sealY = H - 210;
+    var sealY = H - 220;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(220, sealY, 78, 0, Math.PI * 2);
+    ctx.arc(230, sealY, 78, 0, Math.PI * 2);
     ctx.fillStyle = "#0a63d1";
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(220, sealY, 68, 0, Math.PI * 2);
+    ctx.arc(230, sealY, 68, 0, Math.PI * 2);
     ctx.fillStyle = "#f0b429";
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(220, sealY, 58, 0, Math.PI * 2);
+    ctx.arc(230, sealY, 58, 0, Math.PI * 2);
     ctx.fillStyle = "#7f2a8e";
     ctx.fill();
     ctx.fillStyle = "#ffffff";
     ctx.font = "700 18px \"IBM Plex Sans\", sans-serif";
-    ctx.fillText("PODER DE", 220, sealY - 8);
-    ctx.fillText("CRIAR LDs", 220, sealY + 18);
+    ctx.fillText("PODER DE", 230, sealY - 8);
+    ctx.fillText("CRIAR LDs", 230, sealY + 18);
     ctx.restore();
 
     ctx.fillStyle = "#5a6877";
     ctx.font = "500 22px \"IBM Plex Sans\", sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("Emitido em " + dateStr, 340, sealY + 8);
-    ctx.fillText("Tutorial interno · SAE Digital", 340, sealY + 40);
+    ctx.fillText("Emitido em " + dateStr, 350, sealY + 4);
+    ctx.fillText("Tutorial interno · SAE Digital", 350, sealY + 36);
 
-    if (certAssets.digi) {
-      var dw = 220, dh = dw * (certAssets.digi.height / certAssets.digi.width);
-      ctx.save();
-      roundRectPath(ctx, W - 320, H - 320, dw + 36, dh + 20, 24);
-      ctx.fillStyle = "#0b1220";
-      ctx.fill();
-      ctx.drawImage(certAssets.digi, W - 302, H - 310, dw, dh);
-      ctx.restore();
+    if (digi) {
+      var dw = 170, dh = dw * (digi.height / digi.width);
+      ctx.drawImage(digi, W - 300, H - 300, dw, dh);
     }
 
-    ctx.fillStyle = "#9aabb9";
+    ctx.fillStyle = "#8a97a5";
     ctx.font = "500 16px \"IBM Plex Mono\", monospace";
     ctx.textAlign = "center";
     ctx.fillText("Documento simbólico de conclusão do tutorial · 13 passos · 4 fases", W / 2, H - 88);
