@@ -238,19 +238,23 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 }
 .help-digi > * { pointer-events: auto; }
 .help-bubble {
-  max-width: 210px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  position: relative; max-width: 210px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   border-radius: 16px 16px 4px 16px; padding: 10px 14px; font: inherit; font-size: 14px; font-weight: 600;
   box-shadow: 0 10px 28px color-mix(in srgb, var(--ink) 14%, transparent); cursor: pointer; text-align: left;
+  opacity: 0; transform: translateY(8px) scale(.96); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.help-bubble.is-on {
+  opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
   animation: digi-float 3.6s ease-in-out infinite;
 }
 .help-bubble::after {
-  content: ""; position: absolute; right: 22px; bottom: -7px; width: 14px; height: 14px;
+  content: ""; position: absolute; right: 28px; bottom: -7px; width: 14px; height: 14px;
   background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
   transform: rotate(45deg);
 }
-.help-bubble { position: relative; }
 .help-avatar {
-  width: 74px; height: 74px; border: 0; padding: 0; background: transparent; cursor: pointer;
+  width: 96px; height: 96px; border: 0; padding: 0; background: transparent; cursor: pointer;
   animation: digi-float 3.2s ease-in-out infinite;
 }
 .help-avatar img { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--ink) 22%, transparent)); }
@@ -265,7 +269,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 .help-panel .btns .btn { width: 100%; justify-content: center; }
 @media (max-width: 700px) {
   .help-digi { right: 12px; bottom: 12px; }
-  .help-avatar { width: 64px; height: 64px; }
+  .help-avatar { width: 82px; height: 82px; }
   .help-bubble { font-size: 13px; max-width: 170px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1161,19 +1165,34 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   var helpToggle = document.getElementById("helpToggle");
   var helpSlack = document.getElementById("helpSlackLinks");
   var HELP_CONTACTS = [
-    { label: "Chamar no Slack", href: "https://arco.enterprise.slack.com/team/U06U7SX2FDF", primary: true },
-    { label: "Chamar no Slack", href: "https://arco.enterprise.slack.com/team/U0830TU216H", primary: false }
+    { label: "Fale com a Nay", href: "https://arco.enterprise.slack.com/team/U06U7SX2FDF", primary: true },
+    { label: "Fale com o Luiz", href: "https://arco.enterprise.slack.com/team/U0830TU216H", primary: false }
   ];
   if (helpSlack) {
     helpSlack.innerHTML = HELP_CONTACTS.map(function (c) {
       return '<a class="btn has-clip' + (c.primary ? " primary" : "") + '" href="' + c.href + '" target="_blank" rel="noopener">' + CLIP_ICO + esc(c.label) + " &#8599;</a>";
     }).join("");
   }
+  var helpBubbleTimer = 0;
+  function showHelpBubbleBriefly() {
+    if (!helpBubble || !helpPanel.hidden) return;
+    helpBubble.classList.add("is-on");
+    clearTimeout(helpBubbleTimer);
+    helpBubbleTimer = setTimeout(function () {
+      if (helpPanel.hidden) helpBubble.classList.remove("is-on");
+    }, 4500);
+  }
+  function scheduleHelpBubble() {
+    showHelpBubbleBriefly();
+    setTimeout(scheduleHelpBubble, 14000 + Math.random() * 10000);
+  }
   function setHelpOpen(open) {
     if (!helpPanel) return;
     helpPanel.hidden = !open;
     helpBubble.setAttribute("aria-expanded", open ? "true" : "false");
     helpToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) helpBubble.classList.remove("is-on");
+    else showHelpBubbleBriefly();
   }
   function toggleHelp() { setHelpOpen(helpPanel.hidden); }
   helpBubble.addEventListener("click", toggleHelp);
@@ -1182,6 +1201,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     if (!helpPanel || helpPanel.hidden) return;
     if (!document.getElementById("helpDigi").contains(e.target)) setHelpOpen(false);
   });
+  setTimeout(scheduleHelpBubble, 2500);
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && document.getElementById("celebrate")) { closeCelebrate(); return; }
