@@ -203,15 +203,27 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   overflow: hidden;
 }
 .celebrate-card {
-  position: relative; z-index: 2; width: min(520px, 100%);
+  position: relative; z-index: 2; width: min(560px, 100%);
   background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
   padding: 28px 24px 24px; text-align: center; box-shadow: 0 18px 50px color-mix(in srgb, var(--ink) 18%, transparent);
-  animation: celebrate-in .45s ease-out;
+  animation: celebrate-in .45s ease-out; max-height: min(92vh, 920px); overflow: auto;
 }
-.celebrate-card img { width: 108px; height: auto; margin: 0 auto 10px; display: block; animation: digi-float 3.2s ease-in-out infinite; }
+.celebrate-card.wide { width: min(720px, 100%); }
+.celebrate-card > img.mascot { width: 108px; height: auto; margin: 0 auto 10px; display: block; animation: digi-float 3.2s ease-in-out infinite; }
 .celebrate-card h2 { font-family: var(--font-display); font-size: clamp(26px, 4vw, 34px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
 .celebrate-card p { margin: 0 auto 18px; color: var(--muted); max-width: 42ch; }
 .celebrate-card .btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.cert-form { display: grid; gap: 12px; text-align: left; margin: 0 auto 8px; max-width: 420px; }
+.cert-form label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.cert-form input[type="text"] {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.cert-preview-wrap {
+  margin: 8px auto 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+  background: #0b1220; max-width: 100%;
+}
+.cert-preview-wrap canvas { display: block; width: 100%; height: auto; }
 #confettiCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 @keyframes celebrate-in {
   from { opacity: 0; transform: translateY(16px) scale(.96); }
@@ -219,7 +231,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
-  .hero img, .celebrate-card img { animation: none !important; }
+  .hero img, .celebrate-card > img.mascot { animation: none !important; }
   .celebrate-card { animation: none !important; }
 }
 </style>
@@ -590,6 +602,266 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     if (el) el.remove();
   }
 
+  var certAssets = { digi: null, logo: null, ready: null };
+  function loadCertAssets() {
+    if (certAssets.ready) return certAssets.ready;
+    certAssets.ready = Promise.all([
+      new Promise(function (res) {
+        var img = new Image();
+        img.onload = function () { certAssets.digi = img; res(); };
+        img.onerror = function () { res(); };
+        img.src = "digi.png";
+      }),
+      new Promise(function (res) {
+        var img = new Image();
+        img.onload = function () { certAssets.logo = img; res(); };
+        img.onerror = function () { res(); };
+        img.src = "sae-logo.png";
+      }),
+      (document.fonts && document.fonts.ready) ? document.fonts.ready.catch(function () {}) : Promise.resolve()
+    ]);
+    return certAssets.ready;
+  }
+
+  function wrapCanvasText(ctx, text, maxWidth) {
+    var words = String(text).split(/\s+/), lines = [], line = "";
+    words.forEach(function (w) {
+      var test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+      else line = test;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  function drawCertificate(canvas, personName) {
+    var W = 1600, H = 1132;
+    canvas.width = W;
+    canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var name = (personName || "").trim() || "Seu nome aqui";
+    var today = new Date();
+    var dateStr = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+
+    var g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#f7f1e6");
+    g.addColorStop(0.55, "#fffdf8");
+    g.addColorStop(1, "#e8eef8");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = "#0a63d1";
+    ctx.lineWidth = 10;
+    ctx.strokeRect(36, 36, W - 72, H - 72);
+    ctx.strokeStyle = "#7f2a8e";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(52, 52, W - 104, H - 104);
+    ctx.strokeStyle = "#f0b429";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(64, 64, W - 128, H - 128);
+
+    function corner(x, y, s, flipX, flipY) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+      ctx.strokeStyle = "#f0b429";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 70);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(70, 0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(28, 28, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "#7f2a8e";
+      ctx.fill();
+      ctx.restore();
+    }
+    corner(88, 88, 1, false, false);
+    corner(W - 88, 88, 1, true, false);
+    corner(88, H - 88, 1, false, true);
+    corner(W - 88, H - 88, 1, true, true);
+
+    if (certAssets.logo) {
+      var lw = 210, lh = lw * (certAssets.logo.height / certAssets.logo.width);
+      ctx.save();
+      roundRectPath(ctx, W / 2 - lw / 2 - 18, 92, lw + 36, lh + 24, 18);
+      ctx.fillStyle = "#0b1220";
+      ctx.fill();
+      ctx.drawImage(certAssets.logo, W / 2 - lw / 2, 104, lw, lh);
+      ctx.restore();
+    }
+
+    ctx.fillStyle = "#0a63d1";
+    ctx.font = "700 28px \"IBM Plex Sans\", sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("CERTIFICADO DE CONCLUSÃO", W / 2, 310);
+
+    ctx.fillStyle = "#15202b";
+    ctx.font = "700 64px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
+    ctx.fillText("Livros Digitais novos do SAE", W / 2, 390);
+
+    ctx.fillStyle = "#5a6877";
+    ctx.font = "500 28px \"IBM Plex Sans\", sans-serif";
+    ctx.fillText("Certificamos que", W / 2, 470);
+
+    ctx.fillStyle = "#7f2a8e";
+    ctx.font = "700 72px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
+    var nameLines = wrapCanvasText(ctx, name, W - 280);
+    var nameY = 560;
+    nameLines.slice(0, 2).forEach(function (ln, i) {
+      ctx.fillText(ln, W / 2, nameY + i * 78);
+    });
+    var afterName = nameY + Math.min(nameLines.length, 2) * 78 + 18;
+
+    ctx.strokeStyle = "#dbe1e7";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 280, afterName);
+    ctx.lineTo(W / 2 + 280, afterName);
+    ctx.stroke();
+
+    ctx.fillStyle = "#15202b";
+    ctx.font = "500 26px \"IBM Plex Sans\", sans-serif";
+    var body = "concluiu todas as etapas do tutorial de criação dos Livros Digitais novos e está apta(o) a produzir capítulos — do PDF do professor à liberação do pagamento.";
+    var bodyLines = wrapCanvasText(ctx, body, W - 320);
+    bodyLines.forEach(function (ln, i) {
+      ctx.fillText(ln, W / 2, afterName + 50 + i * 36);
+    });
+
+    var sealY = H - 210;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(220, sealY, 78, 0, Math.PI * 2);
+    ctx.fillStyle = "#0a63d1";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(220, sealY, 68, 0, Math.PI * 2);
+    ctx.fillStyle = "#f0b429";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(220, sealY, 58, 0, Math.PI * 2);
+    ctx.fillStyle = "#7f2a8e";
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 18px \"IBM Plex Sans\", sans-serif";
+    ctx.fillText("PODER DE", 220, sealY - 8);
+    ctx.fillText("CRIAR LDs", 220, sealY + 18);
+    ctx.restore();
+
+    ctx.fillStyle = "#5a6877";
+    ctx.font = "500 22px \"IBM Plex Sans\", sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Emitido em " + dateStr, 340, sealY + 8);
+    ctx.fillText("Tutorial interno · SAE Digital", 340, sealY + 40);
+
+    if (certAssets.digi) {
+      var dw = 220, dh = dw * (certAssets.digi.height / certAssets.digi.width);
+      ctx.save();
+      roundRectPath(ctx, W - 320, H - 320, dw + 36, dh + 20, 24);
+      ctx.fillStyle = "#0b1220";
+      ctx.fill();
+      ctx.drawImage(certAssets.digi, W - 302, H - 310, dw, dh);
+      ctx.restore();
+    }
+
+    ctx.fillStyle = "#9aabb9";
+    ctx.font = "500 16px \"IBM Plex Mono\", monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Documento simbólico de conclusão do tutorial · 13 passos · 4 fases", W / 2, H - 88);
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function downloadCertificate(canvas, personName) {
+    var safe = (personName || "certificado").trim().replace(/[^\wÀ-ÿ]+/gi, "-").replace(/^-|-$/g, "") || "certificado";
+    var a = document.createElement("a");
+    a.download = "certificado-ld-sae-" + safe + ".png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  }
+
+  function celebrateHomeHtml() {
+    return '<img class="mascot" src="digi.png" alt="">' +
+      '<p class="eyebrow" style="color:var(--ok);justify-content:center">Missão cumprida</p>' +
+      '<h2 id="celebrateTitle">Parabéns! Você concluiu todas as etapas da criação</h2>' +
+      '<p>Do PDF do professor até a liberação do pagamento, o caminho inteiro do Livro Digital novo do SAE está feito.</p>' +
+      '<div class="btns">' +
+        '<button type="button" class="btn" id="celebrateClose">Fechar</button>' +
+        '<button type="button" class="btn primary" id="celebrateCert">Emitir certificado</button>' +
+      "</div>";
+  }
+
+  function celebrateCertHtml() {
+    return '<p class="eyebrow" style="color:var(--accent);justify-content:center">Certificado</p>' +
+      '<h2 id="celebrateTitle">Emitir certificado de conclusão</h2>' +
+      '<p>Digite seu nome para personalizar a arte. Com ela, você leva o selo simbólico de quem já pode criar Livros Digitais novos do SAE.</p>' +
+      '<div class="cert-form">' +
+        '<label for="certName">Seu nome</label>' +
+        '<input type="text" id="certName" maxlength="60" placeholder="Ex.: Juliana Tavares" autocomplete="name">' +
+      "</div>" +
+      '<div class="cert-preview-wrap"><canvas id="certCanvas" width="1600" height="1132" aria-label="Prévia do certificado"></canvas></div>' +
+      '<div class="btns">' +
+        '<button type="button" class="btn" id="certBack">Voltar</button>' +
+        '<button type="button" class="btn" id="celebrateClose">Fechar</button>' +
+        '<button type="button" class="btn primary" id="certDownload">Baixar imagem</button>' +
+      "</div>";
+  }
+
+  function bindCelebrateChrome(el, withConfetti) {
+    var closeBtn = document.getElementById("celebrateClose");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeCelebrate);
+      if (!withConfetti) closeBtn.focus();
+    }
+    el.onclick = function (e) { if (e.target === el) closeCelebrate(); };
+  }
+
+  function openCertIssuer(el) {
+    var card = el.querySelector(".celebrate-card");
+    card.classList.add("wide");
+    card.innerHTML = celebrateCertHtml();
+    bindCelebrateChrome(el, false);
+    document.getElementById("certBack").addEventListener("click", function () {
+      card.classList.remove("wide");
+      card.innerHTML = celebrateHomeHtml();
+      wireCelebrateHome(el, false);
+    });
+    var input = document.getElementById("certName");
+    var canvas = document.getElementById("certCanvas");
+    var redraw = function () { drawCertificate(canvas, input.value); };
+    loadCertAssets().then(redraw);
+    input.addEventListener("input", redraw);
+    document.getElementById("certDownload").addEventListener("click", function () {
+      var n = input.value.trim();
+      if (!n) { input.focus(); input.setAttribute("aria-invalid", "true"); return; }
+      loadCertAssets().then(function () {
+        drawCertificate(canvas, n);
+        downloadCertificate(canvas, n);
+      });
+    });
+    input.focus();
+  }
+
+  function wireCelebrateHome(el, withConfetti) {
+    bindCelebrateChrome(el, withConfetti);
+    document.getElementById("celebrateCert").addEventListener("click", function () {
+      openCertIssuer(el);
+    });
+    if (withConfetti) {
+      var closeBtn = document.getElementById("celebrateClose");
+      if (closeBtn) closeBtn.focus();
+    }
+  }
+
   function showCelebrate() {
     closeCelebrate();
     var el = document.createElement("div");
@@ -598,24 +870,11 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     el.setAttribute("role", "dialog");
     el.setAttribute("aria-modal", "true");
     el.setAttribute("aria-labelledby", "celebrateTitle");
-    el.innerHTML =
-      '<div class="celebrate-card">' +
-        '<img src="digi.png" alt="">' +
-        '<p class="eyebrow" style="color:var(--ok);justify-content:center">Missão cumprida</p>' +
-        '<h2 id="celebrateTitle">Parabéns! Você concluiu todas as etapas da criação</h2>' +
-        '<p>Do PDF do professor até a liberação do pagamento, o caminho inteiro do Livro Digital novo do SAE está feito.</p>' +
-        '<div class="btns">' +
-          '<button type="button" class="btn primary" id="celebrateClose">Continuar</button>' +
-          '<a class="btn" href="#glossario" id="celebrateGloss">Ver glossário</a>' +
-        "</div>" +
-      "</div>";
+    el.innerHTML = '<div class="celebrate-card">' + celebrateHomeHtml() + "</div>";
     document.body.appendChild(el);
     burstConfetti(el);
-    var closeBtn = document.getElementById("celebrateClose");
-    if (closeBtn) closeBtn.focus();
-    closeBtn.addEventListener("click", closeCelebrate);
-    document.getElementById("celebrateGloss").addEventListener("click", closeCelebrate);
-    el.addEventListener("click", function (e) { if (e.target === el) closeCelebrate(); });
+    wireCelebrateHome(el, true);
+    loadCertAssets();
   }
 
   function buildNav(current) {
