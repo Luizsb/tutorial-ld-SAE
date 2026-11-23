@@ -299,7 +299,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 <a class="skip" id="skipLink" href="#conteudo">Ir para o conteúdo</a>
 <div class="scrim" id="scrim"></div>
 <div class="topbar">
-  <button class="btn" id="menuBtn" aria-expanded="false" aria-controls="side">Menu</button>
+  <button class="btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="side" aria-label="Abrir ou fechar menu">Menu</button>
   <strong>Livros Digitais novos do SAE</strong>
 </div>
 <div class="app">
@@ -309,14 +309,14 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       <span><span class="brandtitle">Livros Digitais novos</span><span class="brandsub">Tutorial de criação, do PDF ao pagamento</span></span>
     </a>
     <div class="progress" aria-live="polite">
-      <div class="progress-top"><span>Seu progresso</span><span id="progText">0 de 13 passos</span></div>
-      <div class="bar"><span id="progBar"></span></div>
+      <div class="progress-top"><span id="progLabel">Seu progresso</span><span id="progText">0 de 13 passos</span></div>
+      <div class="bar" role="progressbar" aria-labelledby="progLabel" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="progBarWrap"><span id="progBar"></span></div>
     </div>
     <p class="save-note" id="saveNote"></p>
     <nav class="nav" id="nav" aria-label="Passos do tutorial"></nav>
     <button class="reset" id="resetBtn" type="button">Limpar meu progresso</button>
   </aside>
-  <main class="main" id="main" tabindex="-1"></main>
+  <main class="main" id="conteudo" tabindex="-1"></main>
 </div>
 
 <script>
@@ -574,7 +574,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   var ORDER = PAGES.map(function (p) { return p.id; }).concat(STEPS.map(function (s) { return s.id; })).concat(EXTRA_END.map(function (p) { return p.id; }));
 
   var navEl = document.getElementById("nav");
-  var mainEl = document.getElementById("main");
+  var mainEl = document.getElementById("conteudo");
   var sideEl = document.getElementById("side");
 
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -583,7 +583,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   var CLIP_ICO = '<svg class="clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.5 6.5v10a4.5 4.5 0 0 1-9 0V6.75a2.75 2.75 0 0 1 5.5 0V16a1 1 0 1 1-2 0V7.5a.75.75 0 0 0-1.5 0v9a3 3 0 0 0 6 0V6.75a4.25 4.25 0 0 0-8.5 0V16.5a5.75 5.75 0 0 0 11.5 0V8.25a.75.75 0 0 0-1.5 0z"/></svg>';
   var DOWNLOAD_ICO = '<svg class="clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z"/></svg>';
   function linkBtn(label, href) {
-    return '<a class="btn has-clip" href="' + href + '" target="_blank" rel="noopener">' + CLIP_ICO + esc(label) + ' &#8599;</a>';
+    return '<a class="btn has-clip" href="' + href + '" target="_blank" rel="noopener" aria-label="' + esc(label) + ' (abre em nova aba)">' + CLIP_ICO + esc(label) + ' &#8599;</a>';
   }
 
   var confettiRaf = 0;
@@ -1003,7 +1003,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
         var d = store.done[s.id];
         var locked = !unlocked;
         var cls = (d ? "done " : "") + (locked ? "locked" : "");
-        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") + (locked ? ' title="bloqueado"' : "") + '><span class="num">' +
+        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") +
+          (locked ? ' aria-label="' + esc(s.title) + ' (bloqueado — desbloqueia no Encontro 1)" title="bloqueado"' : "") + '><span class="num">' +
           (locked
             ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
             : (d ? "&#10003;" : s.n)) +
@@ -1021,6 +1022,12 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       : "Este navegador bloqueou o salvamento. O progresso vale só enquanto a página estiver aberta.";
     document.getElementById("progText").textContent = unlocked ? (count + " de " + STEPS.length + " passos") : "Bloqueado";
     document.getElementById("progBar").style.width = unlocked ? (count / STEPS.length * 100) + "%" : "0%";
+    var barWrap = document.getElementById("progBarWrap");
+    if (barWrap) {
+      barWrap.setAttribute("aria-valuemax", String(STEPS.length));
+      barWrap.setAttribute("aria-valuenow", unlocked ? String(count) : "0");
+      barWrap.setAttribute("aria-valuetext", unlocked ? (count + " de " + STEPS.length + " passos concluídos") : "Módulos bloqueados até o Encontro 1");
+    }
   }
 
   function pager(id) {
@@ -1114,8 +1121,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       '<p class="lead">Para evitar spoiler antes do treinamento, o detalhe de cada passo fica fechado. No encontro do dia <b>07/12</b> você recebe a senha e desbloqueia os módulos neste navegador.</p>' +
       '<div class="unlock-box">' +
         '<label for="unlockCode">Senha do Encontro 1</label>' +
-        '<input type="password" id="unlockCode" autocomplete="off" placeholder="Digite a senha">' +
-        '<p class="err" id="unlockErr"></p>' +
+        '<input type="password" id="unlockCode" autocomplete="off" placeholder="Digite a senha" aria-describedby="unlockErr">' +
+        '<p class="err" id="unlockErr" role="status" aria-live="assertive"></p>' +
         '<div class="btns" style="display:flex;flex-wrap:wrap;gap:8px">' +
           '<button type="button" class="btn primary" id="unlockBtn">Desbloquear módulos</button>' +
           '<a class="btn" href="#acessos">Ir para acessos</a>' +
@@ -1252,7 +1259,11 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     document.getElementById("scrim").classList.toggle("on", open);
     this.setAttribute("aria-expanded", open ? "true" : "false");
   });
-  document.getElementById("skipLink").addEventListener("click", function (e) { e.preventDefault(); mainEl.focus(); });
+  document.getElementById("skipLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    mainEl.focus({ preventScroll: true });
+    mainEl.scrollIntoView({ block: "start" });
+  });
   document.getElementById("scrim").addEventListener("click", closeMenu);
 
   document.addEventListener("keydown", function (e) {
