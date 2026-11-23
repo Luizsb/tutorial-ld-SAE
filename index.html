@@ -751,12 +751,12 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 
     ctx.fillStyle = "#7f2a8e";
     ctx.font = "700 64px \"Bricolage Grotesque\", \"Segoe UI\", sans-serif";
-    var nameLines = wrapCanvasText(ctx, name, W - 320);
-    nameLines.slice(0, 2).forEach(function (ln) {
+    var nameLines = wrapCanvasText(ctx, name, W - 320).slice(0, 2);
+    nameLines.forEach(function (ln, i) {
+      if (i) y += 68;
       ctx.fillText(ln, W / 2, y);
-      y += 70;
     });
-    y += 8;
+    y += 22;
 
     ctx.strokeStyle = "#cfd6de";
     ctx.lineWidth = 2;
@@ -764,7 +764,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ctx.moveTo(W / 2 - 260, y);
     ctx.lineTo(W / 2 + 260, y);
     ctx.stroke();
-    y += 48;
+    y += 44;
 
     ctx.fillStyle = "#15202b";
     ctx.font = "500 24px \"IBM Plex Sans\", sans-serif";
