@@ -185,6 +185,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   50% { transform: translateY(-10px); }
 }
 .links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.btn .clip, .clip-ico { width: 15px; height: 15px; flex: none; display: inline-block; vertical-align: -2px; margin-right: 4px; }
+.btn.has-clip { display: inline-flex; align-items: center; gap: 2px; }
 .guide { display: flex; gap: 12px; align-items: center; margin: 0 0 18px; }
 .guide img { width: 44px; height: auto; }
 .cred { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-width: 70ch; display: grid; gap: 10px; }
@@ -505,6 +507,10 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function phaseOf(s) { return PHASES[s.phase - 1]; }
   function allStepsDone() { return STEPS.every(function (s) { return !!store.done[s.id]; }); }
+  var CLIP_ICO = '<svg class="clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.5 6.5v10a4.5 4.5 0 0 1-9 0V6.75a2.75 2.75 0 0 1 5.5 0V16a1 1 0 1 1-2 0V7.5a.75.75 0 0 0-1.5 0v9a3 3 0 0 0 6 0V6.75a4.25 4.25 0 0 0-8.5 0V16.5a5.75 5.75 0 0 0 11.5 0V8.25a.75.75 0 0 0-1.5 0z"/></svg>';
+  function linkBtn(label, href) {
+    return '<a class="btn has-clip" href="' + href + '" target="_blank" rel="noopener">' + CLIP_ICO + esc(label) + ' &#8599;</a>';
+  }
 
   var confettiRaf = 0;
   var confettiOnResize = null;
@@ -985,7 +991,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       var label = "Consigo usar: <b>" + esc(t[0]) + "</b> — " + esc(t[1]) + " (passos " + esc(t[2]) + ")";
       h += '<li class="check-row"><label><input type="checkbox" data-k="' + k + '"' + (store.checks[k] ? " checked" : "") + "><span>" + label + "</span></label>";
       if (t[3]) {
-        h += '<a class="btn" href="' + t[3] + '" target="_blank" rel="noopener">Abrir &#8599;</a>';
+        h += linkBtn("Abrir", t[3]);
       }
       h += "</li>";
     });
@@ -1021,7 +1027,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       "<h1>" + esc(s.title) + "</h1><p class='lead'>" + s.lead + "</p>" +
       '<p style="margin:0 0 18px"><span class="pill">' + esc(s.tool) + "</span> &nbsp;<span style='color:var(--muted);font-size:14px'>Acesso: " + esc(s.access) + "</span></p>";
     if (s.links) {
-      h += '<div class="links">' + s.links.map(function (l) { return '<a class="btn" href="' + l[1] + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>'; }).join("") + "</div>";
+      h += '<div class="links">' + s.links.map(function (l) { return linkBtn(l[0], l[1]); }).join("") + "</div>";
     }
     if (s.path) {
       h += '<p class="path-label">Caminho</p><div class="path">' + s.path.map(function (p) { return "<span>" + esc(p) + "</span>"; }).join("<b>&rarr;</b>") + "</div><div style='height:18px'></div>";
