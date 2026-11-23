@@ -196,6 +196,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 .meet-card .meet-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin: 0; line-height: 1.2; }
 .meet-card .meet-body { margin: 0; color: var(--muted); font-size: 15px; }
 .meet-card .meet-out { margin: 0; font-size: 14px; }
+.meet-card .meet-link { margin-top: 4px; }
 .meet-card .tag {
   justify-self: start; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent);
@@ -540,10 +541,10 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   ];
 
   var MEETINGS = [
-    ["Encontro 1", "07/12 · 15:00 às 16:00", "Visão geral, acessos e passos 1 a 3", "Preparação: baixar, cortar e organizar no Drive."],
-    ["Encontro 2", "A agendar", "Passos 4 a 8", "Produção: escolher o capítulo e gerar o HTML no DIA LD."],
-    ["Encontro 3", "A agendar", "Passos 9 a 11", "Validação: PDF contra HTML, cotejo e ajustes."],
-    ["Encontro 4", "A agendar", "Passos 12 e 13", "Publicação no Bigodão e fluxo de pagamento."]
+    ["Encontro 1", "07/12 · 15:00 às 16:00", "Visão geral, acessos e passos 1 a 3", "Preparação: baixar, cortar e organizar no Drive.", "https://meet.google.com/spd-wzvn-cat"],
+    ["Encontro 2", "A agendar", "Passos 4 a 8", "Produção: escolher o capítulo e gerar o HTML no DIA LD.", ""],
+    ["Encontro 3", "A agendar", "Passos 9 a 11", "Validação: PDF contra HTML, cotejo e ajustes.", ""],
+    ["Encontro 4", "A agendar", "Passos 12 e 13", "Publicação no Bigodão e fluxo de pagamento.", ""]
   ];
 
   var store = { done: {}, checks: {}, unlocked: false };
@@ -1089,10 +1090,13 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
         '<h2 class="meet-title">' + esc(m[0]) + "</h2>" +
         '<p class="when">' + esc(m[1]) + "</p>" +
         '<p class="meet-body"><b>Conteúdo.</b> ' + esc(m[2]) + "</p>" +
-        '<p class="meet-out"><b>Entrega.</b> ' + esc(m[3]) + "</p>" +
-        "</article>";
+        '<p class="meet-out"><b>Entrega.</b> ' + esc(m[3]) + "</p>";
+      if (m[4]) {
+        h += '<div class="meet-link">' + linkBtn("Entrar na reunião", m[4]) + "</div>";
+      }
+      h += "</article>";
     });
-    h += '</div><div class="attn"><strong>Encontro 1.</strong> 07/12, das 15:00 às 16:00 — visão geral, acessos e início do fluxo. Os demais horários ainda serão alinhados com a agenda do time.</div>' + pager("encontros") + "</div>";
+    h += '</div><div class="attn"><strong>Encontro 1.</strong> 07/12, das 15:00 às 16:00 — visão geral, acessos e início do fluxo. Link da reunião: <a href="https://meet.google.com/spd-wzvn-cat" target="_blank" rel="noopener">meet.google.com/spd-wzvn-cat</a>. Os demais horários ainda serão alinhados com a agenda do time.</div>' + pager("encontros") + "</div>";
     return h;
   }
 
