@@ -90,12 +90,15 @@ button { font: inherit; color: inherit; }
 .nav a[aria-current="page"] { background: var(--accent-soft); font-weight: 600; }
 .nav .num { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); }
 .nav a.done .num { background: var(--ok); border-color: var(--ok); color: var(--on-ok); }
+.nav a.locked { color: var(--muted); opacity: .78; }
+.nav a.locked .num { border-style: dashed; font-size: 11px; }
 .nav .plain { flex: none; width: 26px; text-align: center; color: var(--muted); }
 .reset { margin: 18px 6px 0; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
 
 .topbar { display: none; }
 .main { padding: 36px clamp(16px, 4vw, 56px) 72px; }
-.page { max-width: 780px; margin: 0 auto; }
+.page { max-width: 980px; margin: 0 auto; }
+.page.wide { max-width: 1120px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin: 0 0 8px; }
 .eyebrow i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
@@ -151,10 +154,36 @@ dl.gloss dt { font-weight: 600; font-family: var(--font-mono); font-size: 14px; 
 dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
 .phase-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 8px; }
-.phase-map a { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 12px 14px; display: block; }
+.phase-map a, .phase-map .phase-card { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 12px 14px; display: block; }
 .phase-map a:hover { border-color: var(--c); }
+.phase-map .phase-card.locked { opacity: .72; }
 .phase-map small { color: var(--muted); display: block; }
 .phase-map strong { font-family: var(--font-display); font-size: 17px; }
+.meet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 8px 0 18px; }
+.meet-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 20px 18px;
+  display: grid; gap: 10px; min-height: 100%;
+}
+.meet-card.confirmed { border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 18%, transparent); }
+.meet-card .when { font-family: var(--font-mono); font-size: 14px; color: var(--accent); font-weight: 600; }
+.meet-card .meet-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin: 0; line-height: 1.2; }
+.meet-card .meet-body { margin: 0; color: var(--muted); font-size: 15px; }
+.meet-card .meet-out { margin: 0; font-size: 14px; }
+.meet-card .tag {
+  justify-self: start; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent);
+}
+.meet-card.confirmed .tag { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.unlock-box {
+  max-width: 460px; margin: 10px 0 0; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 20px; display: grid; gap: 12px;
+}
+.unlock-box label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.unlock-box input[type="password"], .unlock-box input[type="text"] {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.unlock-box .err { color: #c0392b; font-size: 14px; margin: 0; min-height: 1.2em; }
 
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
@@ -163,7 +192,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   .scrim.on { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 15; }
   .topbar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px; }
   .topbar strong { font-family: var(--font-display); }
-  .grid.two, .phase-map { grid-template-columns: 1fr; }
+  .grid.two, .phase-map, .meet-grid { grid-template-columns: 1fr; }
   .main { padding-top: 22px; }
 }
 
@@ -490,10 +519,14 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ["Encontro 4", "A agendar", "Passos 12 e 13", "Publicação no Bigodão e fluxo de pagamento."]
   ];
 
-  var store = { done: {}, checks: {} };
+  var store = { done: {}, checks: {}, unlocked: false };
   var KEY = "tutorial-ld-v1"; var canSave = false;
-  function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; } catch (e) {} }
+  var UNLOCK_CODE = "ldsae0712";
+  function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; if (typeof store.unlocked !== "boolean") store.unlocked = false; } catch (e) {} }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function modulesUnlocked() { return !!store.unlocked; }
+  function isStepRoute(id) { return /^passo-/.test(id); }
+  function isLockedRoute(id) { return isStepRoute(id) && !modulesUnlocked(); }
 
   var PAGES = [
     { id: "visao-geral", title: "Visão geral", group: null },
@@ -923,15 +956,18 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   }
 
   function buildNav(current) {
+    var unlocked = modulesUnlocked();
     var h = "";
     PAGES.forEach(function (p) {
       h += '<a href="#' + p.id + '"' + (current === p.id ? ' aria-current="page"' : "") + '><span class="plain">&#9679;</span>' + p.title + "</a>";
     });
     PHASES.forEach(function (ph) {
-      h += '<div class="nav-group"><i style="background:' + ph.color + '"></i>' + ph.name + "</div>";
+      h += '<div class="nav-group"><i style="background:' + ph.color + '"></i>' + ph.name + (unlocked ? "" : " · bloqueado") + "</div>";
       STEPS.filter(function (s) { return s.phase === ph.id; }).forEach(function (s) {
         var d = store.done[s.id];
-        h += '<a href="#' + s.id + '" class="' + (d ? "done" : "") + '"' + (current === s.id ? ' aria-current="page"' : "") + '><span class="num">' + (d ? "&#10003;" : s.n) + "</span>" + esc(s.title) + "</a>";
+        var locked = !unlocked;
+        var cls = (d ? "done " : "") + (locked ? "locked" : "");
+        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") + (locked ? ' title="Desbloqueia no Encontro 1"' : "") + '><span class="num">' + (d ? "&#10003;" : s.n) + "</span>" + esc(s.title) + (locked ? " <small style=\"opacity:.7\">(bloqueado)</small>" : "") + "</a>";
       });
     });
     h += '<div class="nav-group"><i style="background:var(--muted)"></i>Referência</div>';
@@ -940,9 +976,11 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     });
     navEl.innerHTML = h;
     var count = STEPS.filter(function (s) { return store.done[s.id]; }).length;
-    document.getElementById("saveNote").textContent = canSave ? "Seu progresso fica salvo neste navegador." : "Este navegador bloqueou o salvamento. O progresso vale só enquanto a página estiver aberta.";
-    document.getElementById("progText").textContent = count + " de " + STEPS.length + " passos";
-    document.getElementById("progBar").style.width = (count / STEPS.length * 100) + "%";
+    document.getElementById("saveNote").textContent = canSave
+      ? (unlocked ? "Seu progresso fica salvo neste navegador." : "Antes do Encontro 1: teste só os acessos. Os passos liberam com a senha do encontro.")
+      : "Este navegador bloqueou o salvamento. O progresso vale só enquanto a página estiver aberta.";
+    document.getElementById("progText").textContent = unlocked ? (count + " de " + STEPS.length + " passos") : "Bloqueado";
+    document.getElementById("progBar").style.width = unlocked ? (count / STEPS.length * 100) + "%" : "0%";
   }
 
   function pager(id) {
@@ -959,31 +997,38 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   }
 
   function pageVisao() {
+    var unlocked = modulesUnlocked();
     var h = '<div class="page"><div class="hero"><img src="digi.png" alt="Digi, o robô guia do tutorial"><div><p class="eyebrow" style="color:var(--accent)">Guia prático</p>' +
       "<h1>Como criar um Livro Digital novo do SAE, do PDF ao pagamento</h1>" +
-      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até a liberação do pagamento. Faça cada passo na ferramenta, marque o que concluiu e avance.</p></div></div>' +
+      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até a liberação do pagamento. Antes do primeiro encontro, teste só os acessos e ferramentas — os passos do fluxo liberam com a senha do Encontro 1.</p></div></div>' +
       '<div class="phase-map">';
     PHASES.forEach(function (ph) {
       var first = STEPS.filter(function (s) { return s.phase === ph.id; })[0];
-      h += '<a href="#' + first.id + '" style="--c:' + ph.color + '"><small>' + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></a>";
+      if (unlocked) {
+        h += '<a href="#' + first.id + '" style="--c:' + ph.color + '"><small>' + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></a>";
+      } else {
+        h += '<div class="phase-card locked" style="--c:' + ph.color + '"><small>' + ph.range + " · bloqueado</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></div>";
+      }
     });
     h += "</div>" +
       "<h2>Como usar este tutorial</h2>" +
       '<div class="grid two">' +
-      '<div class="card"><strong>Um passo por vez.</strong><br>Cada passo tem o que fazer, o que conferir antes de seguir e os pontos de atenção.</div>' +
-      '<div class="card"><strong>Seu progresso fica salvo.</strong><br>As marcações ficam neste navegador. Em outro aparelho, você começa do zero.</div>' +
+      '<div class="card"><strong>Antes do encontro.</strong><br>Abra <a href="#acessos">Acessos e ferramentas</a>, marque o que já consegue usar e peça o que faltar. Assim o Encontro 1 começa sem surpresa.</div>' +
+      '<div class="card"><strong>Passos bloqueados.</strong><br>O detalhe de cada etapa só abre depois do Encontro 1, com a senha que o time passa na hora.</div>' +
       "</div>" +
       "<h2>Projeto de exemplo</h2>" +
       '<p>O fluxo usa como exemplo <b>um capítulo de Geografia, 5º ano</b>, de um volume novo (V2) com HTML de referência do V1. Qualquer disciplina segue o mesmo caminho.</p>' +
       '<div class="attn"><strong>Escopo.</strong> Este guia cobre a criação dos livros digitais novos do SAE, que o time faz internamente. O aproveitamento é terceirizado e não entra aqui.</div>' +
-      '<div class="finish"><span>' + (store.last && store.last !== "passo-1" || Object.keys(store.done).length ? "Você já começou." : "Pronto para começar?") + '</span><span>' + (store.last && /^passo-/.test(store.last) ? '<a class="btn primary" href="#' + store.last + '">Continuar no ' + store.last.replace("passo-", "passo ") + ' &rarr;</a> ' : "") + '<a class="btn' + (store.last && /^passo-/.test(store.last) ? "" : " primary") + '" href="#acessos">Ver acessos e ferramentas</a></span></div>' +
+      '<div class="finish"><span>' + (unlocked ? (store.last && /^passo-/.test(store.last) || Object.keys(store.done).length ? "Você já começou." : "Módulos liberados.") : "Prepare os acessos antes do dia 07/12.") + '</span><span>' +
+        (unlocked && store.last && /^passo-/.test(store.last) ? '<a class="btn primary" href="#' + store.last + '">Continuar no ' + store.last.replace("passo-", "passo ") + ' &rarr;</a> ' : "") +
+        '<a class="btn' + (unlocked && store.last && /^passo-/.test(store.last) ? "" : " primary") + '" href="#acessos">Ver acessos e ferramentas</a></span></div>' +
       "</div>";
     return h;
   }
 
   function pageAcessos() {
-    var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Antes do passo 1</p><h1>Acessos e ferramentas</h1>' +
-      '<p class="lead">Antes de começar, verifique se consegue usar cada ferramenta. Em alguns casos basta abrir o link; em outros, como Drive ou planilha, pode ser preciso pedir acesso ao time. No DIA LD, confira se consegue baixar e rodar o executável. Para abrir o código-fonte do livro digital, tenha o <b>Visual Studio Code</b> ou o <b>Cursor</b> instalado.</p>' +
+    var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Antes do Encontro 1</p><h1>Acessos e ferramentas</h1>' +
+      '<p class="lead">Teste tudo <b>antes</b> do encontro para não travar no dia. Em alguns casos basta abrir o link; em outros, como Drive ou planilha, pode ser preciso pedir acesso ao time. No DIA LD, confira se consegue baixar e rodar o executável. Para o código-fonte do livro digital, tenha o <b>Visual Studio Code</b> ou o <b>Cursor</b> instalado.</p>' +
       '<h2>Verifique se você consegue usar</h2><ul class="checks">';
     TOOLS.forEach(function (t, i) {
       var k = "acc-" + i;
@@ -994,17 +1039,43 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       }
       h += "</li>";
     });
-    h += "</ul>" + pager("acessos") + "</div>";
+    h += '</ul><div style="height:16px"></div><div class="attn"><strong>Os passos do tutorial continuam bloqueados.</strong> No Encontro 1 (07/12) você recebe a senha que libera o fluxo completo.</div>' + pager("acessos") + "</div>";
     return h;
   }
 
   function pageEncontros() {
-    var h = '<div class="page"><p class="eyebrow" style="color:var(--accent)">Calendário</p><h1>Plano de encontros</h1>' +
-      '<p class="lead">Quatro encontros, um por fase, para fechar o treinamento até <b>11/12</b>. Cada encontro é prático: a pessoa faz, o time acompanha.</p>' +
-      '<div class="tablewrap"><table><thead><tr><th>Encontro</th><th>Quando</th><th>Conteúdo</th><th>Entrega</th></tr></thead><tbody>';
-    MEETINGS.forEach(function (m) { h += "<tr><td><b>" + m[0] + "</b></td><td>" + m[1] + "</td><td>" + m[2] + "</td><td>" + m[3] + "</td></tr>"; });
-    h += '</tbody></table></div><div style="height:16px"></div><div class="attn"><strong>Encontro 1 confirmado.</strong> 07/12, das 15:00 às 16:00. Os demais ainda serão alinhados com a agenda do time.</div>' + pager("encontros") + "</div>";
+    var h = '<div class="page wide"><p class="eyebrow" style="color:var(--accent)">Calendário</p><h1>Plano de encontros</h1>' +
+      '<p class="lead">Quatro encontros, um por fase, para fechar o treinamento até <b>11/12</b>. Antes do primeiro, use a página de acessos. No Encontro 1 você recebe a senha que desbloqueia os módulos.</p>' +
+      '<div class="meet-grid">';
+    MEETINGS.forEach(function (m, i) {
+      var confirmed = i === 0;
+      h += '<article class="meet-card' + (confirmed ? " confirmed" : "") + '">' +
+        '<span class="tag">' + (confirmed ? "Confirmado" : "A agendar") + "</span>" +
+        '<h2 class="meet-title">' + esc(m[0]) + "</h2>" +
+        '<p class="when">' + esc(m[1]) + "</p>" +
+        '<p class="meet-body"><b>Conteúdo.</b> ' + esc(m[2]) + "</p>" +
+        '<p class="meet-out"><b>Entrega.</b> ' + esc(m[3]) + "</p>" +
+        "</article>";
+    });
+    h += '</div><div class="attn"><strong>Encontro 1.</strong> 07/12, das 15:00 às 16:00 — visão geral, acessos e início do fluxo. Os demais horários ainda serão alinhados com a agenda do time.</div>' + pager("encontros") + "</div>";
     return h;
+  }
+
+  function pageUnlockGate(targetId) {
+    return '<div class="page"><p class="eyebrow" style="color:var(--warn)">Módulo bloqueado</p>' +
+      "<h1>Os passos liberam no Encontro 1</h1>" +
+      '<p class="lead">Para evitar spoiler antes do treinamento, o detalhe de cada passo fica fechado. No encontro do dia <b>07/12</b> você recebe a senha e desbloqueia os módulos neste navegador.</p>' +
+      '<div class="unlock-box">' +
+        '<label for="unlockCode">Senha do Encontro 1</label>' +
+        '<input type="password" id="unlockCode" autocomplete="off" placeholder="Digite a senha">' +
+        '<p class="err" id="unlockErr"></p>' +
+        '<div class="btns" style="display:flex;flex-wrap:wrap;gap:8px">' +
+          '<button type="button" class="btn primary" id="unlockBtn">Desbloquear módulos</button>' +
+          '<a class="btn" href="#acessos">Ir para acessos</a>' +
+        "</div>" +
+      "</div>" +
+      '<p style="color:var(--muted);font-size:14px;margin-top:18px">Destino após liberar: <b>' + esc(targetId.replace("passo-", "Passo ")) + "</b></p>" +
+      "</div>";
   }
 
   function pageGlossario() {
@@ -1054,19 +1125,21 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   function render() {
     var id = (location.hash || "").replace("#", "");
     if (ORDER.indexOf(id) < 0) id = "visao-geral";
-    var step = STEPS.filter(function (s) { return s.id === id; })[0];
+    var locked = isLockedRoute(id);
+    var step = !locked ? STEPS.filter(function (s) { return s.id === id; })[0] : null;
     var html;
-    if (step) html = pageStep(step);
+    if (locked) html = pageUnlockGate(id);
+    else if (step) html = pageStep(step);
     else if (id === "visao-geral") html = pageVisao();
     else if (id === "acessos") html = pageAcessos();
     else if (id === "encontros") html = pageEncontros();
     else html = pageGlossario();
     mainEl.innerHTML = html;
-    buildNav(id);
+    buildNav(locked ? id : (step ? step.id : id));
     sideEl.classList.remove("open");
     document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
     var names = { "visao-geral": "Visão geral", acessos: "Acessos e ferramentas", encontros: "Plano de encontros", glossario: "Glossário" };
-    document.title = (step ? "Passo " + step.n + ": " + step.title : names[id]) + " · Livros Digitais novos do SAE";
+    document.title = (locked ? "Módulo bloqueado" : (step ? "Passo " + step.n + ": " + step.title : names[id])) + " · Livros Digitais novos do SAE";
     if (step) { store.last = step.id; save(); }
     document.getElementById("scrim").classList.remove("on");
     window.scrollTo(0, 0);
@@ -1075,6 +1148,26 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     Array.prototype.forEach.call(mainEl.querySelectorAll("input[type=checkbox]"), function (cb) {
       cb.addEventListener("change", function () { store.checks[cb.getAttribute("data-k")] = cb.checked; save(); });
     });
+    var unlockBtn = document.getElementById("unlockBtn");
+    if (unlockBtn) {
+      var unlockInput = document.getElementById("unlockCode");
+      var unlockErr = document.getElementById("unlockErr");
+      var tryUnlock = function () {
+        var typed = (unlockInput.value || "").trim();
+        if (typed.toLowerCase() === UNLOCK_CODE.toLowerCase()) {
+          store.unlocked = true;
+          save();
+          location.hash = id;
+          render();
+          return;
+        }
+        unlockErr.textContent = "Senha incorreta. Ela é passada no Encontro 1.";
+        unlockInput.focus();
+      };
+      unlockBtn.addEventListener("click", tryUnlock);
+      unlockInput.addEventListener("keydown", function (e) { if (e.key === "Enter") tryUnlock(); });
+      unlockInput.focus();
+    }
     var btn = document.getElementById("doneBtn");
     if (btn && step) {
       btn.addEventListener("click", function () {
@@ -1121,7 +1214,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       return;
     }
     closeCelebrate();
-    store = { done: {}, checks: {} };
+    var keepUnlocked = !!store.unlocked;
+    store = { done: {}, checks: {}, unlocked: keepUnlocked };
     save();
     window.__confirmReset = false;
     this.textContent = "Limpar meu progresso";
