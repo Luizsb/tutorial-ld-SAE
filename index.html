@@ -163,8 +163,13 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 .phase-map .phase-card.locked { opacity: .78; cursor: default; }
 .phase-map .phase-card.locked:hover { opacity: 1; border-color: var(--c); }
 .phase-map .lock-ico {
-  position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; color: var(--muted);
+  position: absolute; top: 14px; right: 14px; width: 22px; height: 22px;
+  color: var(--ink); display: block; flex: none; opacity: .85;
 }
+.phase-map .lock-row {
+  display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 600;
+}
+.phase-map .lock-row svg { width: 15px; height: 15px; display: block; color: var(--warn); }
 .phase-map .lock-tip {
   position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%) translateY(4px);
   background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 600; letter-spacing: .02em;
@@ -989,7 +994,11 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
         var d = store.done[s.id];
         var locked = !unlocked;
         var cls = (d ? "done " : "") + (locked ? "locked" : "");
-        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") + (locked ? ' title="Desbloqueia no Encontro 1"' : "") + '><span class="num">' + (d ? "&#10003;" : s.n) + "</span>" + esc(s.title) + (locked ? " <small style=\"opacity:.7\">(bloqueado)</small>" : "") + "</a>";
+        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") + (locked ? ' title="bloqueado"' : "") + '><span class="num">' +
+          (locked
+            ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
+            : (d ? "&#10003;" : s.n)) +
+          "</span>" + esc(s.title) + "</a>";
       });
     });
     h += '<div class="nav-group"><i style="background:var(--muted)"></i>Referência</div>';
@@ -1031,8 +1040,9 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       } else {
         h += '<div class="phase-card locked" style="--c:' + ph.color + '" tabindex="0" aria-label="' + esc(ph.name) + ', bloqueado">' +
           '<span class="lock-tip">bloqueado</span>' +
-          '<svg class="lock-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm7 14H7V10h10v10zm-5-1a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>' +
-          "<small>" + ph.range + "</small><strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></div>";
+          '<svg class="lock-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+          '<span class="lock-row"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' + ph.range + "</span>" +
+          "<strong>" + ph.name + "</strong><small>" + ph.blurb + "</small></div>";
       }
     });
     h += "</div>" +
