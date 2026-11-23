@@ -1164,14 +1164,21 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   var helpBubble = document.getElementById("helpBubble");
   var helpToggle = document.getElementById("helpToggle");
   var helpSlack = document.getElementById("helpSlackLinks");
+  // Team ID (T…) é obrigatório no slack:// — sem ele o app só reabre a última conversa.
+  var SLACK_TEAM_ID = "";
   var HELP_CONTACTS = [
     { label: "Fale com a Nay", userId: "U06U7SX2FDF", primary: true },
     { label: "Fale com o Luiz", userId: "U0830TU216H", primary: false }
   ];
+  function slackUserHref(userId) {
+    if (SLACK_TEAM_ID) {
+      return "slack://user?team=" + encodeURIComponent(SLACK_TEAM_ID) + "&id=" + encodeURIComponent(userId);
+    }
+    return "https://arco.enterprise.slack.com/team/" + encodeURIComponent(userId);
+  }
   if (helpSlack) {
     helpSlack.innerHTML = HELP_CONTACTS.map(function (c) {
-      var appHref = "slack://user?id=" + encodeURIComponent(c.userId);
-      return '<a class="btn has-clip' + (c.primary ? " primary" : "") + '" href="' + appHref + '">' + CLIP_ICO + esc(c.label) + " &#8599;</a>";
+      return '<a class="btn has-clip' + (c.primary ? " primary" : "") + '" href="' + slackUserHref(c.userId) + '"' + (SLACK_TEAM_ID ? "" : ' target="_blank" rel="noopener"') + ">" + CLIP_ICO + esc(c.label) + " &#8599;</a>";
     }).join("");
   }
   var helpRoot = document.getElementById("helpDigi");
