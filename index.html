@@ -549,12 +549,20 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
 
   var store = { done: {}, checks: {}, unlocked: false };
   var KEY = "tutorial-ld-v1"; var canSave = false;
-  var UNLOCK_CODE = "pato";
+  // Verificação por hash (a senha em texto não fica no código).
+  var _uGate = "c4aa39c9c54ac9034bae6f0bd95d24f5cf15ccffd1984a297182fab2e193f4d3";
   function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; if (typeof store.unlocked !== "boolean") store.unlocked = false; } catch (e) {} }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
   function modulesUnlocked() { return !!store.unlocked; }
   function isStepRoute(id) { return /^passo-/.test(id); }
   function isLockedRoute(id) { return isStepRoute(id) && !modulesUnlocked(); }
+  function _digestGate(text) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(text).trim().toLowerCase())).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return ("0" + b.toString(16)).slice(-2);
+      }).join("");
+    });
+  }
 
   var PAGES = [
     { id: "visao-geral", title: "Visão geral", group: null },
@@ -1192,16 +1200,23 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
       var unlockInput = document.getElementById("unlockCode");
       var unlockErr = document.getElementById("unlockErr");
       var tryUnlock = function () {
-        var typed = (unlockInput.value || "").trim();
-        if (typed.toLowerCase() === UNLOCK_CODE.toLowerCase()) {
-          store.unlocked = true;
-          save();
-          location.hash = id;
-          render();
-          return;
-        }
-        unlockErr.textContent = "Senha incorreta. Ela é passada no Encontro 1.";
-        unlockInput.focus();
+        unlockErr.textContent = "";
+        unlockBtn.disabled = true;
+        _digestGate(unlockInput.value || "").then(function (h) {
+          if (h === _uGate) {
+            store.unlocked = true;
+            save();
+            location.hash = id;
+            render();
+            return;
+          }
+          unlockErr.textContent = "Senha incorreta. Ela é passada no Encontro 1.";
+          unlockInput.focus();
+        }).catch(function () {
+          unlockErr.textContent = "Não foi possível validar a senha neste navegador.";
+        }).then(function () {
+          unlockBtn.disabled = false;
+        });
       };
       unlockBtn.addEventListener("click", tryUnlock);
       unlockInput.addEventListener("keydown", function (e) { if (e.key === "Enter") tryUnlock(); });
