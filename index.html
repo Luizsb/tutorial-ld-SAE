@@ -35,7 +35,7 @@
     --bg: #0f1519;
     --surface: #172028;
     --ink: #e8eef3;
-    --muted: #9aabb9;
+    --muted: #b7c4d0;
     --line: #2a3742;
     --accent: #5aa9ff;
     --accent-soft: #12294a;
@@ -54,7 +54,7 @@
   --bg: #0f1519;
   --surface: #172028;
   --ink: #e8eef3;
-  --muted: #9aabb9;
+  --muted: #b7c4d0;
   --line: #2a3742;
   --accent: #5aa9ff;
   --accent-soft: #12294a;
@@ -93,7 +93,21 @@ button { font: inherit; color: inherit; }
 .nav a.locked { color: var(--muted); opacity: .78; }
 .nav a.locked .num { border-style: dashed; font-size: 11px; }
 .nav .plain { flex: none; width: 26px; text-align: center; color: var(--muted); }
-.reset { margin: 18px 6px 0; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
+.side-tools { display: grid; gap: 8px; margin: 18px 6px 0; }
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+.theme-toggle:hover { border-color: var(--accent); }
+.theme-toggle svg { width: 16px; height: 16px; flex: none; }
+.reset { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; text-align: left; }
+.nav-locked-summary {
+  display: block; margin: 4px 6px 10px; padding: 10px 12px; border-radius: 10px;
+  border: 1px dashed var(--line); color: var(--muted); font-size: 13px; line-height: 1.4;
+  text-decoration: none;
+}
+.nav-locked-summary:hover { border-color: var(--accent); color: var(--ink); }
 
 .topbar { display: none; }
 .main { padding: 36px clamp(16px, 4vw, 56px) 72px; }
@@ -114,9 +128,12 @@ p { max-width: 68ch; }
 .path b { color: var(--muted); font-weight: 400; }
 .path-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 6px; }
 
-ol.do { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 10px; }
-ol.do li { counter-increment: s; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 52px; max-width: 70ch; }
-ol.do li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+ol.do { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+ol.do li { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 52px; max-width: 70ch; }
+ol.do .do-num {
+  position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 600;
+}
 .ui { font-family: var(--font-mono); font-size: 13.5px; background: var(--accent-soft); border-radius: 5px; padding: 1px 7px; white-space: nowrap; }
 
 .checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; max-width: 70ch; }
@@ -314,7 +331,13 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     </div>
     <p class="save-note" id="saveNote"></p>
     <nav class="nav" id="nav" aria-label="Passos do tutorial"></nav>
-    <button class="reset" id="resetBtn" type="button">Limpar meu progresso</button>
+    <div class="side-tools">
+      <button type="button" class="theme-toggle" id="themeBtn" aria-label="Alternar tema claro ou escuro">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="themeBtnLabel">Tema: sistema</span>
+      </button>
+      <button class="reset" id="resetBtn" type="button">Limpar meu progresso</button>
+    </div>
   </aside>
   <main class="main" id="conteudo" tabindex="-1"></main>
 </div>
@@ -547,12 +570,41 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     ["Encontro 4", "A agendar", "Passos 12 e 13", "Publicação no Bigodão e fluxo de pagamento.", ""]
   ];
 
-  var store = { done: {}, checks: {}, unlocked: false };
+  var store = { done: {}, checks: {}, unlocked: false, theme: "system" };
   var KEY = "tutorial-ld-v1"; var canSave = false;
   // Verificação por hash (a senha em texto não fica no código).
   var _uGate = "c4aa39c9c54ac9034bae6f0bd95d24f5cf15ccffd1984a297182fab2e193f4d3";
-  function load() { try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; } try { var r = localStorage.getItem(KEY); if (r) store = JSON.parse(r); if (!store.done) store.done = {}; if (!store.checks) store.checks = {}; if (typeof store.unlocked !== "boolean") store.unlocked = false; } catch (e) {} }
+  function load() {
+    try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); canSave = true; } catch (e) { canSave = false; }
+    try {
+      var r = localStorage.getItem(KEY);
+      if (r) store = JSON.parse(r);
+      if (!store.done) store.done = {};
+      if (!store.checks) store.checks = {};
+      if (typeof store.unlocked !== "boolean") store.unlocked = false;
+      if (store.theme !== "light" && store.theme !== "dark" && store.theme !== "system") store.theme = "system";
+    } catch (e) {}
+  }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function applyTheme() {
+    var t = store.theme || "system";
+    var root = document.documentElement;
+    if (t === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", t);
+    var label = document.getElementById("themeBtnLabel");
+    if (label) {
+      label.textContent = t === "light" ? "Tema: claro" : (t === "dark" ? "Tema: escuro" : "Tema: sistema");
+    }
+    var btn = document.getElementById("themeBtn");
+    if (btn) {
+      btn.setAttribute("aria-label", "Tema atual: " + (t === "light" ? "claro" : (t === "dark" ? "escuro" : "sistema")) + ". Clique para alternar");
+    }
+  }
+  function cycleTheme() {
+    store.theme = store.theme === "system" ? "light" : (store.theme === "light" ? "dark" : "system");
+    save();
+    applyTheme();
+  }
   function modulesUnlocked() { return !!store.unlocked; }
   function isStepRoute(id) { return /^passo-/.test(id); }
   function isLockedRoute(id) { return isStepRoute(id) && !modulesUnlocked(); }
@@ -676,10 +728,38 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     confettiRaf = requestAnimationFrame(tick);
   }
 
+  var celebrateFocusReturn = null;
+  var celebrateKeyHandler = null;
+  function getFocusable(root) {
+    return Array.prototype.slice.call(root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+  }
   function closeCelebrate() {
     stopConfetti();
+    if (celebrateKeyHandler) {
+      document.removeEventListener("keydown", celebrateKeyHandler, true);
+      celebrateKeyHandler = null;
+    }
     var el = document.getElementById("celebrate");
     if (el) el.remove();
+    if (celebrateFocusReturn && typeof celebrateFocusReturn.focus === "function") {
+      try { celebrateFocusReturn.focus({ preventScroll: true }); } catch (e) {}
+    }
+    celebrateFocusReturn = null;
+  }
+  function trapCelebrateFocus(el) {
+    if (celebrateKeyHandler) document.removeEventListener("keydown", celebrateKeyHandler, true);
+    celebrateKeyHandler = function (e) {
+      if (e.key === "Escape") { e.preventDefault(); closeCelebrate(); return; }
+      if (e.key !== "Tab") return;
+      var nodes = getFocusable(el);
+      if (!nodes.length) { e.preventDefault(); return; }
+      var first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", celebrateKeyHandler, true);
   }
 
   var certAssets = { digi: null, logo: null, ready: null };
@@ -949,6 +1029,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     card.classList.add("wide");
     card.innerHTML = celebrateCertHtml();
     bindCelebrateChrome(el, false);
+    trapCelebrateFocus(el);
     var input = document.getElementById("certName");
     var canvas = document.getElementById("certCanvas");
     var redraw = function () { drawCertificate(canvas, input.value); };
@@ -977,7 +1058,9 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   }
 
   function showCelebrate() {
+    var prevFocus = document.activeElement;
     closeCelebrate();
+    celebrateFocusReturn = prevFocus;
     var el = document.createElement("div");
     el.id = "celebrate";
     el.className = "celebrate";
@@ -988,6 +1071,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     document.body.appendChild(el);
     burstConfetti(el);
     wireCelebrateHome(el, true);
+    trapCelebrateFocus(el);
     loadCertAssets();
   }
 
@@ -997,20 +1081,21 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     PAGES.forEach(function (p) {
       h += '<a href="#' + p.id + '"' + (current === p.id ? ' aria-current="page"' : "") + '><span class="plain">&#9679;</span>' + p.title + "</a>";
     });
-    PHASES.forEach(function (ph) {
-      h += '<div class="nav-group"><i style="background:' + ph.color + '"></i>' + ph.name + (unlocked ? "" : " · bloqueado") + "</div>";
-      STEPS.filter(function (s) { return s.phase === ph.id; }).forEach(function (s) {
-        var d = store.done[s.id];
-        var locked = !unlocked;
-        var cls = (d ? "done " : "") + (locked ? "locked" : "");
-        h += '<a href="#' + s.id + '" class="' + cls.trim() + '"' + (current === s.id ? ' aria-current="page"' : "") +
-          (locked ? ' aria-label="' + esc(s.title) + ' (bloqueado — desbloqueia no Encontro 1)" title="bloqueado"' : "") + '><span class="num">' +
-          (locked
-            ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
-            : (d ? "&#10003;" : s.n)) +
-          "</span>" + esc(s.title) + "</a>";
+    if (!unlocked) {
+      h += '<div class="nav-group"><i style="background:var(--muted)"></i>Passos do fluxo</div>';
+      h += '<a class="nav-locked-summary" href="#passo-1" aria-label="Passos 1 a 13 bloqueados. Abrir tela de senha do Encontro 1">' +
+        '<b>13 passos bloqueados</b><br>Liberam com a senha do Encontro 1. Até lá, use só os acessos e ferramentas.</a>';
+    } else {
+      PHASES.forEach(function (ph) {
+        h += '<div class="nav-group"><i style="background:' + ph.color + '"></i>' + ph.name + "</div>";
+        STEPS.filter(function (s) { return s.phase === ph.id; }).forEach(function (s) {
+          var d = store.done[s.id];
+          h += '<a href="#' + s.id + '" class="' + (d ? "done" : "") + '"' + (current === s.id ? ' aria-current="page"' : "") + '><span class="num">' +
+            (d ? "&#10003;" : s.n) +
+            "</span>" + esc(s.title) + "</a>";
+        });
       });
-    });
+    }
     h += '<div class="nav-group"><i style="background:var(--muted)"></i>Referência</div>';
     EXTRA_END.forEach(function (p) {
       h += '<a href="#' + p.id + '"' + (current === p.id ? ' aria-current="page"' : "") + '><span class="plain">&#9679;</span>' + p.title + "</a>";
@@ -1046,8 +1131,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   function pageVisao() {
     var unlocked = modulesUnlocked();
     var h = '<div class="page"><div class="hero"><img src="digi.png" alt="Digi, o robô guia do tutorial"><div><p class="eyebrow" style="color:var(--accent)">Guia prático</p>' +
-      "<h1>Como criar um Livro Digital novo do SAE, do PDF ao pagamento</h1>" +
-      '<p class="lead" style="margin:0">Você vai seguir o caminho real de um capítulo: do PDF do professor até a liberação do pagamento. Antes do primeiro encontro, teste só os acessos e ferramentas — os passos do fluxo liberam com a senha do Encontro 1.</p></div></div>' +
+      "<h1>Criar um Livro Digital novo do SAE</h1>" +
+      '<p class="lead" style="margin:0">Do PDF do professor até a liberação do pagamento. Antes do Encontro 1, teste só os acessos e ferramentas — os passos liberam com a senha do encontro.</p></div></div>' +
       '<div class="phase-map">';
     PHASES.forEach(function (ph) {
       var first = STEPS.filter(function (s) { return s.phase === ph.id; })[0];
@@ -1156,7 +1241,9 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     if (s.path) {
       h += '<p class="path-label">Caminho</p><div class="path">' + s.path.map(function (p) { return "<span>" + esc(p) + "</span>"; }).join("<b>&rarr;</b>") + "</div><div style='height:18px'></div>";
     }
-    h += "<h2 style='margin-top:6px'>O que fazer</h2><ol class='do'>" + s.doList.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ol>";
+    h += "<h2 style='margin-top:6px'>O que fazer</h2><ol class='do'>" + s.doList.map(function (x, i) {
+      return "<li><span class='do-num' aria-hidden='true'>" + (i + 1) + "</span>" + x + "</li>";
+    }).join("") + "</ol>";
     if (s.cred) h += credBlock();
     h += "<h2>Confira antes de seguir</h2><ul class='checks'>";
     s.check.forEach(function (c, i) {
@@ -1267,9 +1354,10 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   document.getElementById("scrim").addEventListener("click", closeMenu);
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && document.getElementById("celebrate")) { closeCelebrate(); return; }
+    if (e.key === "Escape" && document.getElementById("celebrate")) return;
     if (e.key === "Escape" && sideEl.classList.contains("open")) { closeMenu(); document.getElementById("menuBtn").focus(); }
   });
+  document.getElementById("themeBtn").addEventListener("click", cycleTheme);
   document.getElementById("resetBtn").addEventListener("click", function () {
     if (!window.__confirmReset) {
       window.__confirmReset = true;
@@ -1280,7 +1368,8 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
     }
     closeCelebrate();
     var keepUnlocked = !!store.unlocked;
-    store = { done: {}, checks: {}, unlocked: keepUnlocked };
+    var keepTheme = store.theme || "system";
+    store = { done: {}, checks: {}, unlocked: keepUnlocked, theme: keepTheme };
     save();
     window.__confirmReset = false;
     this.textContent = "Limpar meu progresso";
@@ -1288,6 +1377,7 @@ dl.gloss dd { margin: 2px 0 0; color: var(--muted); }
   });
   window.addEventListener("hashchange", render);
   load();
+  applyTheme();
   render();
 })();
 </script>
